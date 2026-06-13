@@ -1,1063 +1,493 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>InvestAI — Módulo NLP · Análisis de Sentimiento</title>
-  <!-- Chart.js via CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <style>
-    /* ==========================================================================
-       1. VARIABLES CORPORATIVAS (consistentes con el sistema InvestAI)
-       ========================================================================== */
-    :root {
-      --primario:      #1F3864;
-      --primario-lite: #2c4f8f;
-      --acento:        #C5961A;
-      --acento-lite:   #e8b420;
-      --fondo:         #F5F7FA;
-      --blanco:        #FFFFFF;
-      --negro:         #111827;
-      --gris-texto:    #6B7280;
-      --gris-borde:    #E5E7EB;
-      --gris-card:     #F9FAFB;
-
-      /* Colores de sentimiento */
-      --bullish:       #16A34A;   /* verde */
-      --bullish-bg:    #DCFCE7;
-      --bullish-borde: #86EFAC;
-      --bearish:       #DC2626;   /* rojo */
-      --bearish-bg:    #FEE2E2;
-      --bearish-borde: #FCA5A5;
-      --neutral:       #6B7280;   /* gris */
-      --neutral-bg:    #F3F4F6;
-      --neutral-borde: #D1D5DB;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', 'Calibri', sans-serif;
-      background: var(--fondo);
-      color: var(--negro);
-      min-height: 100vh;
-    }
-
-    /* ==========================================================================
-       2. BARRA DE NAVEGACIÓN
-       ========================================================================== */
-    nav {
-      background: var(--primario);
-      padding: 0 24px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    .nav-brand { display: flex; align-items: center; gap: 10px; }
-    .nav-logo {
-      width: 32px; height: 32px;
-      background: var(--acento);
-      border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 900; color: #fff; font-size: 14px;
-    }
-    .nav-title { color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; }
-    .nav-module { color: var(--acento); font-size: 11px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; }
-    .nav-right { display: flex; align-items: center; gap: 16px; }
-    .badge-nlp {
-      background: rgba(197,150,26,0.18);
-      border: 1px solid var(--acento);
-      color: var(--acento-lite);
-      font-size: 11px; font-weight: 700;
-      padding: 3px 10px; border-radius: 20px;
-      letter-spacing: 0.8px;
-    }
-    .dot-live { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse 1.5s infinite; display: inline-block; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
-    .nav-live-txt { color: #9CA3AF; font-size: 12px; }
-
-    /* ==========================================================================
-       3. BARRA DE FILTROS
-       ========================================================================== */
-    .filters-bar {
-      background: var(--blanco);
-      border-bottom: 1px solid var(--gris-borde);
-      padding: 10px 24px;
-      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-    }
-    .filter-group { display: flex; align-items: center; gap: 8px; }
-    .filter-label {
-      font-size: 11px; font-weight: 700; color: var(--gris-texto);
-      text-transform: uppercase; letter-spacing: 0.8px;
-      white-space: nowrap;
-    }
-    .filter-select, .filter-input {
-      border: 1px solid var(--gris-borde);
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-size: 13px;
-      background: var(--blanco);
-      color: var(--negro);
-      cursor: pointer;
-      transition: border-color .2s;
-      font-family: inherit;
-    }
-    .filter-select:focus, .filter-input:focus {
-      outline: none; border-color: var(--primario);
-    }
-    /* Pastillas de sentimiento como filtro rápido */
-    .sentiment-pills { display: flex; gap: 6px; flex-wrap: wrap; }
-    .pill {
-      padding: 5px 14px; border-radius: 20px;
-      font-size: 12px; font-weight: 700; cursor: pointer;
-      border: 2px solid transparent;
-      transition: all .2s;
-      user-select: none;
-    }
-    .pill-all       { background: var(--primario); color: #fff; }
-    .pill-bullish   { background: var(--bullish-bg); color: var(--bullish); border-color: var(--bullish-borde); }
-    .pill-bearish   { background: var(--bearish-bg); color: var(--bearish); border-color: var(--bearish-borde); }
-    .pill-neutral   { background: var(--neutral-bg); color: var(--neutral); border-color: var(--neutral-borde); }
-    .pill.active    { box-shadow: 0 0 0 3px rgba(31,56,100,0.25); }
-    .pill-bullish.active { border-color: var(--bullish); }
-    .pill-bearish.active { border-color: var(--bearish); }
-    .pill-neutral.active { border-color: var(--neutral); }
-    .pill-all.active     { box-shadow: 0 0 0 3px rgba(31,56,100,0.35); }
-
-    /* ==========================================================================
-       4. LAYOUT PRINCIPAL (grid de 2 columnas)
-       ========================================================================== */
-    .main-layout {
-      display: grid;
-      grid-template-columns: 1fr 360px;
-      gap: 20px;
-      padding: 20px 24px;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-    @media (max-width: 1024px) {
-      .main-layout { grid-template-columns: 1fr; }
-    }
-
-    /* ==========================================================================
-       5. PANEL IZQUIERDO — FEED DE NOTICIAS
-       ========================================================================== */
-    .feed-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 14px;
-    }
-    .feed-title {
-      font-size: 15px; font-weight: 800; color: var(--primario);
-      display: flex; align-items: center; gap: 8px;
-    }
-    .feed-count {
-      background: var(--primario); color: #fff;
-      font-size: 11px; font-weight: 700;
-      padding: 2px 8px; border-radius: 10px;
-    }
-    .feed-sort {
-      font-size: 12px; color: var(--gris-texto); display: flex; align-items: center; gap: 6px;
-    }
-    .feed-sort select {
-      border: 1px solid var(--gris-borde); border-radius: 5px;
-      padding: 4px 8px; font-size: 12px; background: var(--blanco); font-family: inherit;
-    }
-
-    /* Tarjeta de noticia */
-    .news-card {
-      background: var(--blanco);
-      border-radius: 10px;
-      border: 1px solid var(--gris-borde);
-      border-left: 4px solid var(--gris-borde);
-      padding: 16px 18px;
-      margin-bottom: 12px;
-      transition: transform .15s, box-shadow .15s;
-      cursor: default;
-    }
-    .news-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-    .news-card.bullish { border-left-color: var(--bullish); }
-    .news-card.bearish { border-left-color: var(--bearish); }
-    .news-card.neutral { border-left-color: var(--neutral); }
-
-    /* Cabecera de la tarjeta */
-    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
-    .card-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .card-ticker {
-      background: var(--primario); color: #fff;
-      font-size: 11px; font-weight: 800; padding: 2px 8px;
-      border-radius: 4px; letter-spacing: 0.5px;
-    }
-    .card-source { font-size: 11px; color: var(--gris-texto); font-weight: 600; }
-    .card-date   { font-size: 11px; color: #9CA3AF; }
-
-    /* Badge de sentimiento en tarjeta */
-    .sentiment-badge {
-      display: flex; align-items: center; gap: 5px;
-      padding: 4px 10px; border-radius: 20px;
-      font-size: 11px; font-weight: 800; white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .sentiment-badge.bullish { background: var(--bullish-bg); color: var(--bullish); border: 1px solid var(--bullish-borde); }
-    .sentiment-badge.bearish { background: var(--bearish-bg); color: var(--bearish); border: 1px solid var(--bearish-borde); }
-    .sentiment-badge.neutral { background: var(--neutral-bg); color: var(--neutral); border: 1px solid var(--neutral-borde); }
-    .sentiment-icon { font-size: 13px; }
-
-    /* Cuerpo de la tarjeta */
-    .card-title {
-      font-size: 14px; font-weight: 700; color: var(--negro);
-      line-height: 1.4; margin-bottom: 6px;
-    }
-    .card-text { font-size: 13px; color: var(--gris-texto); line-height: 1.55; margin-bottom: 10px; }
-
-    /* Barra de puntuación VADER */
-    .vader-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
-    .vader-label { font-size: 10px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.7px; width: 90px; flex-shrink: 0; }
-    .vader-bar-wrap {
-      flex: 1; height: 6px;
-      background: #E5E7EB; border-radius: 3px; overflow: hidden;
-    }
-    .vader-bar {
-      height: 100%; border-radius: 3px;
-      transition: width .6s ease;
-    }
-    .vader-value { font-size: 11px; font-weight: 700; width: 42px; text-align: right; flex-shrink: 0; }
-
-    /* Mini scores VADER */
-    .vader-scores {
-      display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap;
-    }
-    .vader-score-pill {
-      font-size: 10px; padding: 2px 8px; border-radius: 10px;
-      font-weight: 600; background: var(--gris-card); color: var(--gris-texto);
-      border: 1px solid var(--gris-borde);
-    }
-    .vader-score-pill span { font-weight: 800; }
-
-    /* Clasificación GPT-4o */
-    .gpt-row {
-      display: flex; align-items: center; gap: 8px; margin-top: 8px;
-      padding-top: 8px; border-top: 1px dashed var(--gris-borde);
-    }
-    .gpt-icon {
-      width: 18px; height: 18px; border-radius: 4px;
-      background: #10A37F; display: flex; align-items: center; justify-content: center;
-      font-size: 10px; color: #fff; font-weight: 900; flex-shrink: 0;
-    }
-    .gpt-label { font-size: 10px; color: #9CA3AF; font-weight: 600; }
-    .gpt-verdict {
-      font-size: 11px; font-weight: 800;
-      padding: 1px 8px; border-radius: 10px;
-    }
-    .gpt-verdict.bullish { color: var(--bullish); background: var(--bullish-bg); }
-    .gpt-verdict.bearish { color: var(--bearish); background: var(--bearish-bg); }
-    .gpt-verdict.neutral { color: var(--neutral); background: var(--neutral-bg); }
-    .gpt-reason { font-size: 10px; color: var(--gris-texto); font-style: italic; }
-
-    /* Estado vacío */
-    .empty-state {
-      text-align: center; padding: 60px 20px; color: var(--gris-texto);
-    }
-    .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
-    .empty-state p { font-size: 14px; }
-
-    /* ==========================================================================
-       6. PANEL DERECHO — VISUALIZACIONES
-       ========================================================================== */
-    .right-panel { display: flex; flex-direction: column; gap: 16px; }
-
-    .panel-card {
-      background: var(--blanco);
-      border-radius: 10px;
-      border: 1px solid var(--gris-borde);
-      padding: 18px;
-    }
-    .panel-card-title {
-      font-size: 12px; font-weight: 800; color: var(--primario);
-      text-transform: uppercase; letter-spacing: 0.8px;
-      margin-bottom: 16px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .panel-card-title::before {
-      content: ''; display: inline-block;
-      width: 3px; height: 14px; background: var(--acento); border-radius: 2px;
-    }
-
-    /* --- Gauge Velocímetro (SVG + CSS) --- */
-    .gauge-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .gauge-svg-wrap { position: relative; width: 200px; }
-    .gauge-svg-wrap svg { width: 100%; height: auto; }
-
-    /* Arco de fondo segmentado */
-    .gauge-value-display {
-      text-align: center; margin-top: -10px;
-    }
-    .gauge-score-num {
-      font-size: 28px; font-weight: 900; color: var(--primario); line-height: 1;
-    }
-    .gauge-score-label {
-      font-size: 11px; color: var(--gris-texto); font-weight: 600; margin-top: 2px;
-    }
-    .gauge-verdict {
-      font-size: 14px; font-weight: 800; padding: 4px 18px;
-      border-radius: 20px; margin-top: 6px;
-    }
-    .gauge-verdict.bullish { background: var(--bullish-bg); color: var(--bullish); border: 1.5px solid var(--bullish-borde); }
-    .gauge-verdict.bearish { background: var(--bearish-bg); color: var(--bearish); border: 1.5px solid var(--bearish-borde); }
-    .gauge-verdict.neutral { background: var(--neutral-bg); color: var(--neutral); border: 1.5px solid var(--neutral-borde); }
-
-    /* Etiquetas gauge */
-    .gauge-labels {
-      display: flex; justify-content: space-between; width: 200px;
-      font-size: 10px; font-weight: 700; color: var(--gris-texto);
-      margin-top: 2px;
-    }
-
-    /* Métricas sub-gauge */
-    .gauge-metrics {
-      display: grid; grid-template-columns: repeat(3,1fr);
-      gap: 8px; margin-top: 8px; width: 100%;
-    }
-    .gauge-metric {
-      text-align: center; background: var(--gris-card);
-      border-radius: 8px; padding: 8px 6px;
-      border: 1px solid var(--gris-borde);
-    }
-    .gauge-metric-val { font-size: 16px; font-weight: 900; }
-    .gauge-metric-val.bullish { color: var(--bullish); }
-    .gauge-metric-val.bearish { color: var(--bearish); }
-    .gauge-metric-val.neutral { color: var(--neutral); }
-    .gauge-metric-lbl { font-size: 9px; color: var(--gris-texto); font-weight: 600; text-transform: uppercase; margin-top: 2px; }
-
-    /* --- Gráfico de distribución --- */
-    .chart-wrap { position: relative; height: 180px; }
-
-    /* --- Tabla resumen de tickers --- */
-    .ticker-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .ticker-table th {
-      text-align: left; font-size: 10px; font-weight: 700;
-      color: var(--gris-texto); text-transform: uppercase; letter-spacing: 0.6px;
-      padding: 6px 8px; border-bottom: 2px solid var(--gris-borde);
-    }
-    .ticker-table td { padding: 7px 8px; border-bottom: 1px solid #F3F4F6; }
-    .ticker-table tr:last-child td { border-bottom: none; }
-    .ticker-name { font-weight: 700; color: var(--primario); }
-    .ticker-score { font-weight: 800; }
-    .ticker-score.bullish { color: var(--bullish); }
-    .ticker-score.bearish { color: var(--bearish); }
-    .ticker-score.neutral { color: var(--neutral); }
-    .ticker-dot {
-      width: 8px; height: 8px; border-radius: 50%; display: inline-block;
-    }
-    .ticker-dot.bullish { background: var(--bullish); }
-    .ticker-dot.bearish { background: var(--bearish); }
-    .ticker-dot.neutral { background: var(--neutral); }
-    .news-count-badge {
-      background: var(--gris-card); color: var(--gris-texto);
-      font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 8px;
-      border: 1px solid var(--gris-borde);
-    }
-
-    /* Modelo engine tags */
-    .engine-tags { display: flex; gap: 8px; margin-top: 12px; justify-content: center; }
-    .engine-tag {
-      font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 10px;
-      border: 1px solid; letter-spacing: 0.5px;
-    }
-    .engine-vader { border-color: #6366F1; color: #6366F1; background: #EEF2FF; }
-    .engine-gpt   { border-color: #10A37F; color: #10A37F; background: #ECFDF5; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo NLP - Dashboard de Sentimiento Financiero</title>
+    <!-- Tailwind CSS para un diseño moderno y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js para las visualizaciones métricas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome para los iconos de sentimiento -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
 
-<!-- ============================================================
-     NAVEGACIÓN
-     ============================================================ -->
-<nav>
-  <div class="nav-brand">
-    <div class="nav-logo">AI</div>
-    <div>
-      <div class="nav-title">InvestAI</div>
-      <div class="nav-module">Módulo 6 · NLP &amp; Sentimiento</div>
-    </div>
-  </div>
-  <div class="nav-right">
-    <span class="badge-nlp">VADER + GPT-4o</span>
-    <span class="dot-live"></span>
-    <span class="nav-live-txt">Actualizado hoy</span>
-  </div>
-</nav>
+    <!-- Contenedor Principal -->
+    <div class="container mx-auto px-4 py-6">
+        
+        <!-- Encabezado del Sistema -->
+        <header class="mb-8 border-b border-gray-800 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+                    Sistema NLP: Sentimiento de Mercado
+                </h1>
+                <p class="text-gray-400 text-sm mt-1">
+                    Análisis combinado: <span class="text-blue-400 font-mono">VADER SentimentIntensityAnalyzer</span> + <span class="text-purple-400 font-mono">GPT-4o Complementary Classifier</span>
+                </p>
+            </div>
+            <div class="bg-gray-800 px-4 py-2 rounded-lg text-xs text-gray-400 border border-gray-700">
+                <span class="font-bold text-emerald-400">Umbral VADER:</span> Bullish &ge; 0.05 | Bearish &le; -0.05 | Neutral (otros)
+            </div>
+        </header>
 
-<!-- ============================================================
-     BARRA DE FILTROS
-     ============================================================ -->
-<div class="filters-bar">
-  <!-- Filtro por ticker -->
-  <div class="filter-group">
-    <span class="filter-label">Ticker</span>
-    <select class="filter-select" id="filtroTicker" onchange="aplicarFiltros()">
-      <option value="TODOS">Todos</option>
-      <option value="AAPL">AAPL</option>
-      <option value="TSLA">TSLA</option>
-      <option value="NVDA">NVDA</option>
-      <option value="META">META</option>
-      <option value="AMZN">AMZN</option>
-      <option value="MSFT">MSFT</option>
-      <option value="GOOGL">GOOGL</option>
-      <option value="BTC">BTC</option>
-      <option value="ETH">ETH</option>
-    </select>
-  </div>
+        <!-- Sección de Control de Filtros e Indicadores Gráficos -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            
+            <!-- Panel de Filtros -->
+            <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg flex flex-col justify-between">
+                <h2 class="text-lg font-semibold mb-4 text-gray-200 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-blue-400"></i> Filtros de Búsqueda
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 mb-1">Ticker / Activo</label>
+                        <select id="tickerFilter" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                            <option value="ALL">Todos los activos</option>
+                            <!-- Se poblará dinámicamente -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 mb-1">Fecha Desde</label>
+                        <input type="date" id="dateFrom" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 mb-1">Fecha Hasta</label>
+                        <input type="date" id="dateTo" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+                <button onclick="resetFilters()" class="mt-4 w-full bg-gray-700 hover:bg-gray-600 text-gray-200 py-2 rounded-lg text-sm font-medium transition">
+                    Limpiar Filtros
+                </button>
+            </div>
 
-  <!-- Filtro por fecha -->
-  <div class="filter-group">
-    <span class="filter-label">Desde</span>
-    <input type="date" class="filter-input" id="filtroDesde" onchange="aplicarFiltros()" />
-  </div>
-  <div class="filter-group">
-    <span class="filter-label">Hasta</span>
-    <input type="date" class="filter-input" id="filtroHasta" onchange="aplicarFiltros()" />
-  </div>
+            <!-- Gráfico 1: Distribución del Sentimiento -->
+            <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg">
+                <h2 class="text-lg font-semibold mb-2 text-gray-200 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-bar text-emerald-400"></i> Distribución de Sentimiento
+                </h2>
+                <div class="h-48 relative">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
 
-  <!-- Filtro rápido por sentimiento -->
-  <div class="filter-group">
-    <span class="filter-label">Sentimiento</span>
-    <div class="sentiment-pills">
-      <div class="pill pill-all active" id="pill-TODOS"    onclick="filtrarSentimiento('TODOS')">Todos</div>
-      <div class="pill pill-bullish"    id="pill-BULLISH"  onclick="filtrarSentimiento('BULLISH')">▲ Bullish</div>
-      <div class="pill pill-bearish"    id="pill-BEARISH"  onclick="filtrarSentimiento('BEARISH')">▼ Bearish</div>
-      <div class="pill pill-neutral"    id="pill-NEUTRAL"  onclick="filtrarSentimiento('NEUTRAL')">◆ Neutral</div>
-    </div>
-  </div>
-</div>
+            <!-- Gráfico 2: Velocímetro de Sentimiento Agregado -->
+            <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg flex flex-col justify-between">
+                <h2 class="text-lg font-semibold mb-2 text-gray-200 flex items-center gap-2">
+                    <i class="fa-solid fa-gauge-high text-purple-400"></i> Sentimiento Agregado del Mercado
+                </h2>
+                <div class="h-36 relative flex justify-center items-center">
+                    <canvas id="gaugeChart"></canvas>
+                    <div class="absolute text-center mt-12">
+                        <span id="gaugeValue" class="text-2xl font-black block text-white">0</span>
+                        <span id="gaugeLabel" class="text-xs uppercase font-bold tracking-wider">NEUTRAL</span>
+                    </div>
+                </div>
+                <p class="text-center text-xs text-gray-400 mt-2">Índice basado en el promedio ponderado de VADER Compound (-1 a +1)</p>
+            </div>
 
-<!-- ============================================================
-     LAYOUT PRINCIPAL
-     ============================================================ -->
-<div class="main-layout">
-
-  <!-- ---- FEED DE NOTICIAS ---- -->
-  <div id="columna-feed">
-    <div class="feed-header">
-      <div class="feed-title">
-        📰 Feed de Noticias
-        <span class="feed-count" id="contadorNoticias">15</span>
-      </div>
-      <div class="feed-sort">
-        Ordenar:
-        <select onchange="ordenarFeed(this.value)">
-          <option value="reciente">Más reciente</option>
-          <option value="bullish">Mayor Bullish</option>
-          <option value="bearish">Mayor Bearish</option>
-          <option value="abs">Mayor intensidad</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Las tarjetas se insertan aquí por JS -->
-    <div id="feed-container"></div>
-  </div>
-
-  <!-- ---- PANEL DERECHO ---- -->
-  <div class="right-panel">
-
-    <!-- GAUGE: Sentimiento Agregado del Mercado -->
-    <div class="panel-card">
-      <div class="panel-card-title">Sentimiento Agregado del Mercado</div>
-      <div class="gauge-wrap">
-        <!-- SVG velocímetro semicircular -->
-        <div class="gauge-svg-wrap">
-          <svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg">
-            <!-- Arco BEARISH (rojo) -->
-            <path d="M 15 100 A 85 85 0 0 1 100 15" fill="none" stroke="#FCA5A5" stroke-width="14" stroke-linecap="round"/>
-            <!-- Arco NEUTRAL (gris) -->
-            <path d="M 100 15 A 85 85 0 0 1 155 35" fill="none" stroke="#D1D5DB" stroke-width="14" stroke-linecap="round"/>
-            <!-- Arco BULLISH (verde) -->
-            <path d="M 155 35 A 85 85 0 0 1 185 100" fill="none" stroke="#86EFAC" stroke-width="14" stroke-linecap="round"/>
-
-            <!-- Aguja del gauge -->
-            <g id="aguja-grupo" transform="rotate(-90, 100, 100)">
-              <line id="aguja-linea"
-                    x1="100" y1="100"
-                    x2="100" y2="22"
-                    stroke="var(--primario)" stroke-width="3" stroke-linecap="round"/>
-              <circle cx="100" cy="100" r="6" fill="var(--primario)"/>
-              <circle cx="100" cy="100" r="3" fill="var(--acento)"/>
-            </g>
-
-            <!-- Etiquetas arco -->
-            <text x="12" y="108" font-size="8" fill="#DC2626" font-weight="700">BEAR</text>
-            <text x="86" y="12" font-size="8" fill="#6B7280" font-weight="700">NEU</text>
-            <text x="162" y="108" font-size="8" fill="#16A34A" font-weight="700">BULL</text>
-          </svg>
         </div>
 
-        <div class="gauge-value-display">
-          <div class="gauge-score-num" id="gauge-score">0.00</div>
-          <div class="gauge-score-label">Compound Score Promedio</div>
-        </div>
-
-        <div class="gauge-verdict neutral" id="gauge-verdict">CALCULANDO...</div>
-
-        <!-- Métricas de distribución -->
-        <div class="gauge-metrics">
-          <div class="gauge-metric">
-            <div class="gauge-metric-val bullish" id="cnt-bullish">0</div>
-            <div class="gauge-metric-lbl">▲ Bullish</div>
-          </div>
-          <div class="gauge-metric">
-            <div class="gauge-metric-val neutral" id="cnt-neutral">0</div>
-            <div class="gauge-metric-lbl">◆ Neutral</div>
-          </div>
-          <div class="gauge-metric">
-            <div class="gauge-metric-val bearish" id="cnt-bearish">0</div>
-            <div class="gauge-metric-lbl">▼ Bearish</div>
-          </div>
-        </div>
-
-        <!-- Tags de motores NLP -->
-        <div class="engine-tags">
-          <span class="engine-tag engine-vader">VADER SentimentIntensityAnalyzer</span>
-          <span class="engine-tag engine-gpt">GPT-4o Classifier</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- GRÁFICO: Distribución de Sentimiento del Día -->
-    <div class="panel-card">
-      <div class="panel-card-title">Distribución del Día</div>
-      <div class="chart-wrap">
-        <canvas id="graficoDistribucion"></canvas>
-      </div>
-    </div>
-
-    <!-- TABLA: Resumen por Ticker -->
-    <div class="panel-card">
-      <div class="panel-card-title">Resumen por Ticker</div>
-      <table class="ticker-table" id="tablaResumen">
-        <thead>
-          <tr>
-            <th>Ticker</th>
-            <th>Score</th>
-            <th>Señal</th>
-            <th>Noticias</th>
-          </tr>
-        </thead>
-        <tbody id="tbody-resumen"></tbody>
-      </table>
-    </div>
-
-  </div><!-- /right-panel -->
-</div><!-- /main-layout -->
-
-
-<script>
-/* ==========================================================================
-   DATOS: 15 NOTICIAS FINANCIERAS SIMULADAS
-   - compound >= 0.05  → BULLISH
-   - compound <= -0.05 → BEARISH
-   - entre ambos       → NEUTRAL
-   VADER scores: pos, neg, neu, compound
-   ========================================================================== */
-const NOTICIAS = [
-  {
-    id: 1,
-    ticker: "NVDA",
-    titulo: "NVIDIA supera expectativas del mercado con ingresos récord en chips de IA",
-    fuente: "Bloomberg Mercados",
-    fecha: "2025-06-13",
-    texto: "NVIDIA reportó ganancias trimestrales que superaron en un 28% las estimaciones de Wall Street, impulsadas por la demanda sin precedentes de sus procesadores H100 y B200 para centros de datos de inteligencia artificial. La empresa elevó su guía prospectiva para el próximo trimestre.",
-    vader: { pos: 0.312, neg: 0.000, neu: 0.688, compound: 0.87 },
-    sentimiento: "BULLISH",
-    gpt: { verdict: "BULLISH", razon: "Resultados financieros sólidos, revisión alcista de guidance" }
-  },
-  {
-    id: 2,
-    ticker: "TSLA",
-    titulo: "Tesla recorta precios en Europa ante caída de la demanda de vehículos eléctricos",
-    fuente: "Reuters Finanzas",
-    fecha: "2025-06-12",
-    texto: "Tesla anunció rebajas de hasta el 12% en sus modelos Model 3 y Model Y en los principales mercados europeos, en respuesta a una contracción de la demanda y el creciente avance de fabricantes chinos como BYD y NIO. Los analistas advierten presión adicional sobre los márgenes.",
-    vader: { pos: 0.000, neg: 0.289, neu: 0.711, compound: -0.72 },
-    sentimiento: "BEARISH",
-    gpt: { verdict: "BEARISH", razon: "Recorte de precios defensivo, compresión de márgenes inminente" }
-  },
-  {
-    id: 3,
-    ticker: "META",
-    titulo: "Meta lanza modelo de IA Llama 4 con capacidades multimodales avanzadas",
-    fuente: "TechCrunch ES",
-    fecha: "2025-06-12",
-    texto: "Meta Platforms presentó Llama 4, su modelo de inteligencia artificial de código abierto más potente hasta la fecha, con soporte nativo para texto, imagen y audio. La compañía afirma que supera a GPT-4o en varias pruebas de referencia estándar del sector.",
-    vader: { pos: 0.278, neg: 0.000, neu: 0.722, compound: 0.79 },
-    sentimiento: "BULLISH",
-    gpt: { verdict: "BULLISH", razon: "Hito tecnológico significativo, refuerza liderazgo en IA open-source" }
-  },
-  {
-    id: 4,
-    ticker: "BTC",
-    titulo: "Bitcoin cae un 8% tras comentarios restrictivos de la Reserva Federal",
-    fuente: "CoinDesk Español",
-    fecha: "2025-06-11",
-    texto: "El precio de Bitcoin retrocedió hasta los $62,000 dólares después de que el presidente de la Fed insinuara que los tipos de interés podrían mantenerse elevados por más tiempo del esperado. Los activos de riesgo, incluidas las criptomonedas, sufrieron ventas masivas generalizadas.",
-    vader: { pos: 0.000, neg: 0.341, neu: 0.659, compound: -0.81 },
-    sentimiento: "BEARISH",
-    gpt: { verdict: "BEARISH", razon: "Política monetaria restrictiva impacta negativamente activos especulativos" }
-  },
-  {
-    id: 5,
-    ticker: "AAPL",
-    titulo: "Apple confirma lanzamiento del iPhone 17 con chip A19 de 2nm para septiembre",
-    fuente: "El Economista Tech",
-    fecha: "2025-06-11",
-    texto: "Fuentes internas confirmaron que Apple presentará el iPhone 17 en su evento anual de septiembre, equipado con el chip A19 fabricado en proceso de 2 nanómetros por TSMC. Se espera mejoras sustanciales en autonomía de batería y capacidades de IA local.",
-    vader: { pos: 0.198, neg: 0.000, neu: 0.802, compound: 0.62 },
-    sentimiento: "BULLISH",
-    gpt: { verdict: "BULLISH", razon: "Pipeline de producto sólido, ventaja competitiva en silicio propio" }
-  },
-  {
-    id: 6,
-    ticker: "AMZN",
-    titulo: "Amazon Web Services reporta crecimiento estable del 18% pero por debajo de lo esperado",
-    fuente: "Wall Street Journal ES",
-    fecha: "2025-06-10",
-    texto: "AWS registró ingresos de $29.3 mil millones en el último trimestre, un crecimiento del 18% interanual que, aunque sólido, quedó por debajo del 21% proyectado por los analistas. La empresa citó mayor competencia de Microsoft Azure y Google Cloud como factores limitantes.",
-    vader: { pos: 0.098, neg: 0.087, neu: 0.815, compound: 0.03 },
-    sentimiento: "NEUTRAL",
-    gpt: { verdict: "NEUTRAL", razon: "Resultados mixtos: crecimiento sólido pero con señales de presión competitiva" }
-  },
-  {
-    id: 7,
-    ticker: "GOOGL",
-    titulo: "Alphabet enfrenta multa récord de €4.5B en Europa por monopolio publicitario",
-    fuente: "Expansión Digital",
-    fecha: "2025-06-10",
-    texto: "La Comisión Europea impuso a Alphabet una multa de 4,500 millones de euros por abuso de posición dominante en el mercado de publicidad online. Es la sanción más elevada de la historia contra una empresa tecnológica en la Unión Europea. La empresa anunció que apelará la decisión.",
-    vader: { pos: 0.000, neg: 0.318, neu: 0.682, compound: -0.76 },
-    sentimiento: "BEARISH",
-    gpt: { verdict: "BEARISH", razon: "Riesgo regulatorio severo, impacto directo en flujos de caja" }
-  },
-  {
-    id: 8,
-    ticker: "MSFT",
-    titulo: "Microsoft integra Copilot en toda la suite Office 365 con funciones de agentes autónomos",
-    fuente: "Forbes Tecnología",
-    fecha: "2025-06-09",
-    texto: "Microsoft anunció la disponibilidad general de Copilot Agents en Word, Excel, PowerPoint y Teams, permitiendo a los usuarios automatizar flujos de trabajo completos mediante lenguaje natural. La compañía reporta 65 millones de usuarios activos de Copilot.",
-    vader: { pos: 0.251, neg: 0.000, neu: 0.749, compound: 0.74 },
-    sentimiento: "BULLISH",
-    gpt: { verdict: "BULLISH", razon: "Monetización acelerada de IA, tracción de usuarios significativa" }
-  },
-  {
-    id: 9,
-    ticker: "ETH",
-    titulo: "Ethereum completa actualización Pectra con mejoras en escalabilidad y tarifas de gas",
-    fuente: "Decrypt Español",
-    fecha: "2025-06-09",
-    texto: "La red Ethereum ejecutó exitosamente el hard fork Pectra, que reduce en un 40% las tarifas promedio de gas y aumenta el límite de blobs para mejorar la escalabilidad de las redes Layer 2. El precio de ETH respondió con una subida del 6% en las primeras horas post-actualización.",
-    vader: { pos: 0.289, neg: 0.000, neu: 0.711, compound: 0.82 },
-    sentimiento: "BULLISH",
-    gpt: { verdict: "BULLISH", razon: "Mejora técnica exitosa, reducción de costos operativos en la red" }
-  },
-  {
-    id: 10,
-    ticker: "TSLA",
-    titulo: "Tesla presenta prototipo funcional de robotaxi Cybercab en evento privado para inversores",
-    fuente: "Automotive News",
-    fecha: "2025-06-08",
-    texto: "Elon Musk mostró un prototipo funcional del Cybercab en un evento privado en Austin, Texas. El vehículo autónomo completó un recorrido de prueba sin intervención humana. La empresa planea iniciar producción limitada a finales de 2026, pendiente de aprobaciones regulatorias.",
-    vader: { pos: 0.176, neg: 0.065, neu: 0.759, compound: 0.41 },
-    sentimiento: "BULLISH",
-    gpt: { verdict: "NEUTRAL", razon: "Avance positivo pero alta incertidumbre regulatoria y temporal" }
-  },
-  {
-    id: 11,
-    ticker: "AAPL",
-    titulo: "Ventas de Mac y iPad de Apple se mantienen estables sin cambios significativos en cuota de mercado",
-    fuente: "IDC Noticias",
-    fecha: "2025-06-08",
-    texto: "El informe trimestral de IDC muestra que Apple mantuvo su participación de mercado en computadoras personales en 8.5%, prácticamente sin cambios respecto al año anterior. Las ventas de iPad crecieron un 3.2%, en línea con las proyecciones del consenso de analistas.",
-    vader: { pos: 0.058, neg: 0.041, neu: 0.901, compound: 0.02 },
-    sentimiento: "NEUTRAL",
-    gpt: { verdict: "NEUTRAL", razon: "Resultados en línea con expectativas, sin catalizadores claros" }
-  },
-  {
-    id: 12,
-    ticker: "NVDA",
-    titulo: "Restricciones de exportación de chips de IA a China amenazan ingresos de NVIDIA en Asia",
-    fuente: "Financial Times ES",
-    fecha: "2025-06-07",
-    texto: "El Departamento de Comercio de EE.UU. amplió las restricciones de exportación de chips avanzados de IA, afectando directamente a los productos H20 que NVIDIA había diseñado específicamente para el mercado chino. Los analistas estiman un impacto de hasta $4,000 millones en ingresos anuales.",
-    vader: { pos: 0.000, neg: 0.297, neu: 0.703, compound: -0.69 },
-    sentimiento: "BEARISH",
-    gpt: { verdict: "BEARISH", razon: "Riesgo geopolítico materializado, pérdida de mercado estratégico" }
-  },
-  {
-    id: 13,
-    ticker: "META",
-    titulo: "Meta supera 3.5 mil millones de usuarios activos diarios en todas sus plataformas combinadas",
-    fuente: "Statista News",
-    fecha: "2025-06-07",
-    texto: "La familia de aplicaciones de Meta —Facebook, Instagram, WhatsApp y Threads— alcanzó un nuevo récord de 3,500 millones de usuarios activos diarios, consolidando su posición como el ecosistema de redes sociales más grande del mundo. Los ingresos publicitarios crecieron un 22% interanual.",
-    vader: { pos: 0.334, neg: 0.000, neu: 0.666, compound: 0.89 },
-    sentimiento: "BULLISH",
-    gpt: { verdict: "BULLISH", razon: "Métricas de engagement récord, monetización publicitaria robusta" }
-  },
-  {
-    id: 14,
-    ticker: "BTC",
-    titulo: "BlackRock reporta flujos netos de $2B en su ETF de Bitcoin spot durante la semana",
-    fuente: "Bloomberg Cripto",
-    fecha: "2025-06-06",
-    texto: "El ETF de Bitcoin de BlackRock (IBIT) registró entradas netas de $2,000 millones en la semana pasada, convirtiéndose en el fondo cotizado de más rápido crecimiento en la historia del sector. El total de activos bajo gestión del ETF superó los $50,000 millones.",
-    vader: { pos: 0.264, neg: 0.000, neu: 0.736, compound: 0.77 },
-    sentimiento: "BULLISH",
-    gpt: { verdict: "BULLISH", razon: "Institucionalización masiva del activo, flujos de capital récord" }
-  },
-  {
-    id: 15,
-    ticker: "AMZN",
-    titulo: "Amazon enfrenta huelga de trabajadores de logística en principales centros de distribución europeos",
-    fuente: "El País Economía",
-    fecha: "2025-06-06",
-    texto: "Miles de trabajadores de almacenes de Amazon en Alemania, España y Polonia iniciaron una huelga de 48 horas en demanda de mejores condiciones laborales y aumentos salariales. La empresa confirmó retrasos en entregas en algunas regiones pero indicó que el impacto operativo es limitado.",
-    vader: { pos: 0.041, neg: 0.213, neu: 0.746, compound: -0.52 },
-    sentimiento: "BEARISH",
-    gpt: { verdict: "BEARISH", razon: "Riesgo operativo y reputacional, posible presión en costos laborales" }
-  }
-];
-
-/* ==========================================================================
-   ESTADO DE FILTROS
-   ========================================================================== */
-let filtroSentimientoActivo = "TODOS";
-let instanciaGrafico = null;
-
-/* ==========================================================================
-   INICIALIZACIÓN
-   ========================================================================== */
-document.addEventListener("DOMContentLoaded", () => {
-  // Fechas por defecto: últimos 7 días
-  const hoy = new Date();
-  const hace7 = new Date(hoy);
-  hace7.setDate(hoy.getDate() - 7);
-  document.getElementById("filtroDesde").value = hace7.toISOString().split("T")[0];
-  document.getElementById("filtroHasta").value = hoy.toISOString().split("T")[0];
-
-  // Renderizado inicial completo
-  aplicarFiltros();
-});
-
-/* ==========================================================================
-   FILTROS Y RENDER
-   ========================================================================== */
-function aplicarFiltros() {
-  const ticker = document.getElementById("filtroTicker").value;
-  const desde  = document.getElementById("filtroDesde").value;
-  const hasta  = document.getElementById("filtroHasta").value;
-
-  let noticias = NOTICIAS.filter(n => {
-    const matchTicker = (ticker === "TODOS") || (n.ticker === ticker);
-    const matchDesde  = !desde || n.fecha >= desde;
-    const matchHasta  = !hasta || n.fecha <= hasta;
-    const matchSent   = (filtroSentimientoActivo === "TODOS") || (n.sentimiento === filtroSentimientoActivo);
-    return matchTicker && matchDesde && matchHasta && matchSent;
-  });
-
-  renderFeed(noticias);
-  actualizarGauge(noticias);
-  actualizarGrafico(noticias);
-  actualizarTablaResumen(noticias);
-  document.getElementById("contadorNoticias").textContent = noticias.length;
-}
-
-function filtrarSentimiento(sent) {
-  filtroSentimientoActivo = sent;
-  // Actualizar pills activas
-  ["TODOS","BULLISH","BEARISH","NEUTRAL"].forEach(s => {
-    document.getElementById("pill-" + s).classList.toggle("active", s === sent);
-  });
-  aplicarFiltros();
-}
-
-function ordenarFeed(criterio) {
-  // Re-aplicar filtros con nuevo orden
-  const ticker = document.getElementById("filtroTicker").value;
-  const desde  = document.getElementById("filtroDesde").value;
-  const hasta  = document.getElementById("filtroHasta").value;
-
-  let noticias = NOTICIAS.filter(n => {
-    const matchTicker = (ticker === "TODOS") || (n.ticker === ticker);
-    const matchDesde  = !desde || n.fecha >= desde;
-    const matchHasta  = !hasta || n.fecha <= hasta;
-    const matchSent   = (filtroSentimientoActivo === "TODOS") || (n.sentimiento === filtroSentimientoActivo);
-    return matchTicker && matchDesde && matchHasta && matchSent;
-  });
-
-  if (criterio === "reciente") {
-    noticias.sort((a, b) => b.fecha.localeCompare(a.fecha));
-  } else if (criterio === "bullish") {
-    noticias.sort((a, b) => b.vader.compound - a.vader.compound);
-  } else if (criterio === "bearish") {
-    noticias.sort((a, b) => a.vader.compound - b.vader.compound);
-  } else if (criterio === "abs") {
-    noticias.sort((a, b) => Math.abs(b.vader.compound) - Math.abs(a.vader.compound));
-  }
-
-  renderFeed(noticias);
-}
-
-/* ==========================================================================
-   RENDER DEL FEED DE NOTICIAS
-   ========================================================================== */
-function renderFeed(noticias) {
-  const container = document.getElementById("feed-container");
-
-  if (noticias.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">🔍</div>
-        <p>No hay noticias que coincidan con los filtros seleccionados.</p>
-      </div>`;
-    return;
-  }
-
-  // Ordenar por fecha desc por defecto
-  const ordenadas = [...noticias].sort((a, b) => b.fecha.localeCompare(a.fecha));
-
-  container.innerHTML = ordenadas.map(n => {
-    const clase     = n.sentimiento.toLowerCase();
-    const icono     = n.sentimiento === "BULLISH" ? "📈" : n.sentimiento === "BEARISH" ? "📉" : "➡️";
-    const gptClase  = n.gpt.verdict.toLowerCase();
-
-    // Barra VADER compound: mapear [-1, 1] → [0, 100]%
-    const pct          = ((n.vader.compound + 1) / 2 * 100).toFixed(1);
-    const colorBarra   = n.sentimiento === "BULLISH" ? "#16A34A"
-                       : n.sentimiento === "BEARISH" ? "#DC2626"
-                       : "#9CA3AF";
-
-    // Color del compound score
-    const colorCompound = n.vader.compound >= 0.05 ? "#16A34A"
-                        : n.vader.compound <= -0.05 ? "#DC2626"
-                        : "#6B7280";
-
-    return `
-    <div class="news-card ${clase}">
-      <!-- CABECERA -->
-      <div class="card-header">
+        <!-- Feed de Noticias -->
         <div>
-          <div class="card-meta">
-            <span class="card-ticker">${n.ticker}</span>
-            <span class="card-source">${n.fuente}</span>
-            <span class="card-date">${formatFecha(n.fecha)}</span>
-          </div>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold flex items-center gap-2 text-gray-100">
+                    <i class="fa-solid fa-newspaper text-amber-400"></i> Feed de Noticias Procesadas 
+                    <span id="newsCount" class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-mono">15</span>
+                </h2>
+            </div>
+
+            <!-- Tarjetas de Noticias -->
+            <div id="newsFeed" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Se inyecta vía JavaScript -->
+            </div>
         </div>
-        <div class="sentiment-badge ${clase}">
-          <span class="sentiment-icon">${icono}</span>
-          ${n.sentimiento}
-        </div>
-      </div>
 
-      <!-- TÍTULO Y TEXTO -->
-      <div class="card-title">${n.titulo}</div>
-      <div class="card-text">${n.texto}</div>
+    </div>
 
-      <!-- VADER SCORES -->
-      <div class="vader-scores">
-        <span class="vader-score-pill">Pos: <span style="color:#16A34A">${n.vader.pos.toFixed(3)}</span></span>
-        <span class="vader-score-pill">Neg: <span style="color:#DC2626">${n.vader.neg.toFixed(3)}</span></span>
-        <span class="vader-score-pill">Neu: <span style="color:#6B7280">${n.vader.neu.toFixed(3)}</span></span>
-      </div>
+    <!-- Lógica de Simulación, Renderizado y Analíticas -->
+    <script>
+        // 15 Noticias Financieras simuladas de forma realista en español con metadatos NLP
+        const newsData = [
+            {
+                id: 1,
+                ticker: "NVDA",
+                titulo: "NVIDIA supera las expectativas del mercado con ingresos récord impulsados por la demanda de chips H200",
+                fuente: "Bloomberg Global",
+                fecha: "2026-06-12",
+                resumen: "El gigante de los semiconductores reportó un incremento del 42% interanual en su división de centros de datos. La demanda insaciable de infraestructura para Inteligencia Artificial generativa mantiene márgenes superiores al 75%, superando las proyecciones de Wall Street.",
+                vader_compound: 0.88,
+                gpt4_sentiment: "BULLISH"
+            },
+            {
+                id: 2,
+                ticker: "TSLA",
+                titulo: "Preocupación por la desaceleración de ventas de vehículos eléctricos en Europa golpea la cotización de Tesla",
+                fuente: "Reuters España",
+                fecha: "2026-06-12",
+                resumen: "Las matriculaciones de Tesla en el mercado europeo cayeron un 14% este último mes debido a la eliminación de subsidios estatales en mercados clave y al aumento de la competencia asiática. Analistas recortan el precio objetivo.",
+                vader_compound: -0.65,
+                gpt4_sentiment: "BEARISH"
+            },
+            {
+                id: 3,
+                ticker: "SAN",
+                titulo: "Banco Santander mantiene sin cambios su política de dividendos para el próximo trimestre",
+                fuente: "Expansión",
+                fecha: "2026-06-11",
+                resumen: "El consejo de administración ratificó la continuidad del payout del 50%. La entidad bancaria afirma encontrarse en una posición cómoda de capital y prefiere mantener la prudencia regulatoria ante la evolución macroeconómica de Latam.",
+                vader_compound: 0.02,
+                gpt4_sentiment: "NEUTRAL"
+            },
+            {
+                id: 4,
+                ticker: "AAPL",
+                titulo: "Apple anuncia su ecosistema Siri-OS integrado completamente con modelos OpenAI locales",
+                fuente: "TechCrunch",
+                fecha: "2026-06-11",
+                resumen: "En la apertura de su conferencia anual de desarrolladores, Apple sorprendió al mercado con integraciones directas a nivel de hardware para IA motivando un repunte masivo de órdenes de compra para el nuevo iPhone 18.",
+                vader_compound: 0.79,
+                gpt4_sentiment: "BULLISH"
+            },
+            {
+                id: 5,
+                ticker: "MSFT",
+                titulo: "Microsoft planea una inversión millonaria en nuevos centros de datos soberanos en Madrid y Barcelona",
+                fuente: "El Economista",
+                fecha: "2026-06-10",
+                resumen: "La tecnológica expandirá sustancialmente su infraestructura de nube en Europa con un despliegue de 3.200 millones de euros, con la finalidad de captar la creciente demanda del sector público y corporativo sujeto a estrictas normativas de datos.",
+                vader_compound: 0.61,
+                gpt4_sentiment: "BULLISH"
+            },
+            {
+                id: 6,
+                ticker: "AMZN",
+                titulo: "La Comisión Europea abre una nueva investigación antimonopolio contra el Marketplace de Amazon",
+                fuente: "Cinco Días",
+                fecha: "2026-06-10",
+                resumen: "Reguladores de Bruselas indagan si el gigante de Seattle está priorizando de manera desleal sus productos de marca blanca frente a terceros distribuidores utilizando datos analíticos internos no públicos.",
+                vader_compound: -0.48,
+                gpt4_sentiment: "BEARISH"
+            },
+            {
+                id: 7,
+                ticker: "BABA",
+                titulo: "Alibaba estabiliza ingresos gracias a la expansión internacional de su división AliExpress Choice",
+                fuente: "Nikkei Asia",
+                fecha: "2026-06-09",
+                resumen: "Aunque el consumo doméstico en China sigue mostrando debilidad estructural, la reestructuración de la logística transfronteriza del grupo impulsó las ventas externas un 18%, compensando las contracciones de su mercado local.",
+                vader_compound: 0.35,
+                gpt4_sentiment: "BULLISH"
+            },
+            {
+                id: 8,
+                ticker: "BBVA",
+                titulo: "El beneficio neto de BBVA escala un 15% apuntalado por el gran desempeño de su filial mexicana",
+                fuente: "El Confidencial",
+                fecha: "2026-06-09",
+                resumen: "La entidad financiera superó los pronósticos del consenso del mercado al totalizar sólidas ganancias netas. El margen de intereses se vio robustecido por las tasas de interés persistentemente elevadas en México.",
+                vader_compound: 0.72,
+                gpt4_sentiment: "BULLISH"
+            },
+            {
+                id: 9,
+                ticker: "FED",
+                titulo: "La Reserva Federal decide mantener estables los tipos de interés en rango de 5.25% - 5.50%",
+                fuente: "Wall Street Journal",
+                fecha: "2026-06-08",
+                resumen: "Jerome Powell argumentó que los últimos datos de inflación subyacente muestran resiliencia a la baja, por lo cual el comité prefiere adoptar una postura de observación prolongada antes de sugerir recortes de tasas en el año.",
+                vader_compound: -0.01,
+                gpt4_sentiment: "NEUTRAL"
+            },
+            {
+                id: 10,
+                ticker: "META",
+                titulo: "Fallo global en la API publicitaria de Meta paraliza campañas de agencias durante seis horas",
+                fuente: "AdWeek",
+                fecha: "2026-06-08",
+                resumen: "Un error crítico en el despliegue de código afectó los servidores de anuncios de Instagram y Facebook, provocando pérdidas millonarias estimadas en facturación diaria y el malestar de anunciantes corporativos.",
+                vader_compound: -0.52,
+                gpt4_sentiment: "BEARISH"
+            },
+            {
+                id: 11,
+                ticker: "GOOGL",
+                titulo: "Alphabet presenta Gemma-3, su nuevo modelo open-source optimizado para procesadores móviles",
+                fuente: "VentureBeat",
+                fecha: "2026-06-07",
+                resumen: "La matriz de Google liberó nuevos pesos para modelos compactos de alta eficiencia. Analistas ven esto como un movimiento estratégico brillante para bloquear la distribución de Apple y dominar el mercado open-source.",
+                vader_compound: 0.58,
+                gpt4_sentiment: "BULLISH"
+            },
+            {
+                id: 12,
+                ticker: "NFLX",
+                titulo: "Netflix pierde tracción de suscriptores en Latinoamérica ante el alza generalizada de tarifas",
+                fuente: "Plataformas TV",
+                fecha: "2026-06-07",
+                resumen: "El reciente endurecimiento contra las cuentas compartidas y el aumento de precios en planes estándar provocó una migración de usuarios hacia alternativas más económicas como Max y Disney+ en la región.",
+                vader_compound: -0.39,
+                gpt4_sentiment: "BEARISH"
+            },
+            {
+                id: 13,
+                ticker: "TEF",
+                titulo: "Telefónica suscribe alianza estratégica con Starlink para conectar empresas en zonas remotas",
+                fuente: "Expansión España",
+                fecha: "2026-06-06",
+                resumen: "Telefónica Global Solutions integrará de manera oficial las soluciones de órbita baja de Starlink en su portafolio B2B para todo el mercado hispanohablante, potenciando soluciones para minería y agricultura de precisión.",
+                vader_compound: 0.45,
+                gpt4_sentiment: "BULLISH"
+            },
+            {
+                id: 14,
+                ticker: "REP",
+                titulo: "Repsol inicia parada técnica programada en su refinería de Cartagena para optimización ambiental",
+                fuente: "Energía 16",
+                fecha: "2026-06-06",
+                resumen: "Los trabajos requerirán 45 días de ejecuciones e inversiones orientadas al despliegue de hidrógeno verde. El volumen de producción refinada se reducirá de manera temporal, estando ya cubierto mediante reservas estratégicas.",
+                vader_compound: 0.00,
+                gpt4_sentiment: "NEUTRAL"
+            },
+            {
+                id: 15,
+                ticker: "BTC",
+                titulo: "Presión regulatoria en EE.UU. sobre protocolos DeFi arrastra la cotización de Bitcoin y criptoactivos",
+                fuente: "CoinDesk",
+                fecha: "2026-06-05",
+                resumen: "La SEC emitió notificaciones judiciales preventivas a múltiples proveedores de liquidez descentralizada. El nerviosismo institucional causó liquidaciones en cascada en los principales exchanges de criptomonedas.",
+                vader_compound: -0.71,
+                gpt4_sentiment: "BEARISH"
+            }
+        ];
 
-      <!-- BARRA COMPOUND -->
-      <div class="vader-row">
-        <span class="vader-label">Compound VADER</span>
-        <div class="vader-bar-wrap">
-          <div class="vader-bar" style="width:${pct}%; background:${colorBarra}"></div>
-        </div>
-        <span class="vader-value" style="color:${colorCompound}">
-          ${n.vader.compound >= 0 ? "+" : ""}${n.vader.compound.toFixed(2)}
-        </span>
-      </div>
+        // Instancias globales de gráficos para su posterior actualización/destrucción dinámica
+        let distributionChartInstance = null;
+        let gaugeChartInstance = null;
 
-      <!-- CLASIFICACIÓN GPT-4o -->
-      <div class="gpt-row">
-        <div class="gpt-icon">G</div>
-        <span class="gpt-label">GPT-4o:</span>
-        <span class="gpt-verdict ${gptClase}">${n.gpt.verdict}</span>
-        <span class="gpt-reason">${n.gpt.razon}</span>
-      </div>
-    </div>`;
-  }).join("");
-}
+        // Configuración inicial al cargar el DOM
+        document.addEventListener("DOMContentLoaded", () => {
+            populateTickerFilter();
+            initDateFilters();
+            filterAndRender();
 
-/* ==========================================================================
-   GAUGE VELOCÍMETRO (SVG con aguja animada)
-   ========================================================================== */
-function actualizarGauge(noticias) {
-  if (noticias.length === 0) {
-    document.getElementById("gauge-score").textContent  = "N/A";
-    document.getElementById("gauge-verdict").textContent = "SIN DATOS";
-    document.getElementById("gauge-verdict").className  = "gauge-verdict neutral";
-    document.getElementById("cnt-bullish").textContent  = 0;
-    document.getElementById("cnt-bearish").textContent  = 0;
-    document.getElementById("cnt-neutral").textContent  = 0;
-    moverAguja(0);
-    return;
-  }
+            // Escuchas de eventos para filtrado interactivo
+            document.getElementById("tickerFilter").addEventListener("change", filterAndRender);
+            document.getElementById("dateFrom").addEventListener("change", filterAndRender);
+            document.getElementById("dateTo").addEventListener("change", filterAndRender);
+        });
 
-  // Promedio compound
-  const promedio = noticias.reduce((sum, n) => sum + n.vader.compound, 0) / noticias.length;
-  const bullish  = noticias.filter(n => n.sentimiento === "BULLISH").length;
-  const bearish  = noticias.filter(n => n.sentimiento === "BEARISH").length;
-  const neutral  = noticias.filter(n => n.sentimiento === "NEUTRAL").length;
-
-  document.getElementById("gauge-score").textContent  = (promedio >= 0 ? "+" : "") + promedio.toFixed(3);
-  document.getElementById("cnt-bullish").textContent  = bullish;
-  document.getElementById("cnt-bearish").textContent  = bearish;
-  document.getElementById("cnt-neutral").textContent  = neutral;
-
-  const veredicto = promedio >= 0.05 ? "BULLISH" : promedio <= -0.05 ? "BEARISH" : "NEUTRAL";
-  const iconoGauge = veredicto === "BULLISH" ? "▲ BULLISH" : veredicto === "BEARISH" ? "▼ BEARISH" : "◆ NEUTRAL";
-  document.getElementById("gauge-verdict").textContent = iconoGauge;
-  document.getElementById("gauge-verdict").className  = "gauge-verdict " + veredicto.toLowerCase();
-
-  // Animar aguja
-  moverAguja(promedio);
-}
-
-/**
- * Mueve la aguja del gauge SVG.
- * compound en [-1, 1] → ángulo [-90°, 90°] sobre el pivote en (100,100).
- * El SVG tiene la aguja apuntando hacia arriba en rotate(-90), así que:
- * ángulo final = compound * 90 grados adicionales.
- */
-function moverAguja(compound) {
-  const clamp  = Math.max(-1, Math.min(1, compound));
-  const grados = clamp * 90; // -90 (bearish) … 0 (neutral) … +90 (bullish)
-  const grupo  = document.getElementById("aguja-grupo");
-  if (grupo) {
-    grupo.style.transition = "transform 0.8s cubic-bezier(0.34,1.56,0.64,1)";
-    grupo.setAttribute("transform", `rotate(${-90 + grados}, 100, 100)`);
-  }
-}
-
-/* ==========================================================================
-   GRÁFICO DE BARRAS HORIZONTALES (Chart.js)
-   ========================================================================== */
-function actualizarGrafico(noticias) {
-  const bullish = noticias.filter(n => n.sentimiento === "BULLISH").length;
-  const bearish = noticias.filter(n => n.sentimiento === "BEARISH").length;
-  const neutral = noticias.filter(n => n.sentimiento === "NEUTRAL").length;
-
-  const ctx = document.getElementById("graficoDistribucion").getContext("2d");
-
-  if (instanciaGrafico) {
-    // Actualizar datos sin recrear
-    instanciaGrafico.data.datasets[0].data = [bullish, neutral, bearish];
-    instanciaGrafico.update("active");
-    return;
-  }
-
-  instanciaGrafico = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: ["▲ BULLISH", "◆ NEUTRAL", "▼ BEARISH"],
-      datasets: [{
-        label: "Noticias",
-        data: [bullish, neutral, bearish],
-        backgroundColor: ["#DCFCE7", "#F3F4F6", "#FEE2E2"],
-        borderColor:     ["#16A34A", "#6B7280", "#DC2626"],
-        borderWidth: 2,
-        borderRadius: 6,
-        borderSkipped: false,
-      }]
-    },
-    options: {
-      indexAxis: "y",  // barras horizontales
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => ` ${ctx.raw} noticias`
-          }
+        // Poblado dinámico del filtro de selectores (Tickers únicos)
+        function populateTickerFilter() {
+            const select = document.getElementById("tickerFilter");
+            const tickers = [...new Set(newsData.map(item => item.ticker))].sort();
+            tickers.forEach(ticker => {
+                const opt = document.createElement("option");
+                opt.value = ticker;
+                opt.textContent = ticker;
+                select.appendChild(opt);
+            });
         }
-      },
-      scales: {
-        x: {
-          ticks: {
-            stepSize: 1,
-            font: { size: 11 },
-            color: "#6B7280"
-          },
-          grid: { color: "#F3F4F6" },
-          border: { display: false }
-        },
-        y: {
-          ticks: {
-            font: { size: 12, weight: "700" },
-            color: "#374151"
-          },
-          grid: { display: false },
-          border: { display: false }
+
+        // Asignación de rango inicial a los inputs de fecha basados en la data
+        function initDateFilters() {
+            const dates = newsData.map(item => new Date(item.fecha));
+            const minDate = new Date(Math.min(...dates)).toISOString().split('T')[0];
+            const maxDate = new Date(Math.max(...dates)).toISOString().split('T')[0];
+            
+            document.getElementById("dateFrom").value = minDate;
+            document.getElementById("dateTo").value = maxDate;
         }
-      }
-    }
-  });
-}
 
-/* ==========================================================================
-   TABLA RESUMEN POR TICKER
-   ========================================================================== */
-function actualizarTablaResumen(noticias) {
-  // Agrupar por ticker
-  const grupos = {};
-  noticias.forEach(n => {
-    if (!grupos[n.ticker]) grupos[n.ticker] = { noticias: [], sum: 0 };
-    grupos[n.ticker].noticias.push(n);
-    grupos[n.ticker].sum += n.vader.compound;
-  });
+        // Reseteo de controles de filtrado
+        function resetFilters() {
+            document.getElementById("tickerFilter").value = "ALL";
+            initDateFilters();
+            filterAndRender();
+        }
 
-  const tbody = document.getElementById("tbody-resumen");
-  const filas = Object.entries(grupos)
-    .map(([ticker, g]) => ({
-      ticker,
-      count: g.noticias.length,
-      prom: g.sum / g.noticias.length
-    }))
-    .sort((a, b) => b.prom - a.prom);
+        // Función Núcleo: Filtra datos según controles y actualiza UI + Gráficos
+        function filterAndRender() {
+            const selectedTicker = document.getElementById("tickerFilter").value;
+            const dateFrom = document.getElementById("dateFrom").value;
+            const dateTo = document.getElementById("dateTo").value;
 
-  if (filas.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#9CA3AF;padding:16px">Sin datos</td></tr>`;
-    return;
-  }
+            // Filtrado lógico
+            const filteredData = newsData.filter(item => {
+                const matchTicker = (selectedTicker === "ALL" || item.ticker === selectedTicker);
+                const matchDate = (!dateFrom || item.fecha >= dateFrom) && (!dateTo || item.fecha <= dateTo);
+                return matchTicker && matchDate;
+            });
 
-  tbody.innerHTML = filas.map(f => {
-    const cls  = f.prom >= 0.05 ? "bullish" : f.prom <= -0.05 ? "bearish" : "neutral";
-    const sign = f.prom >= 0 ? "+" : "";
-    return `
-    <tr>
-      <td><span class="ticker-name">${f.ticker}</span></td>
-      <td><span class="ticker-score ${cls}">${sign}${f.prom.toFixed(3)}</span></td>
-      <td><span class="ticker-dot ${cls}"></span></td>
-      <td><span class="news-count-badge">${f.count}</span></td>
-    </tr>`;
-  }).join("");
-}
+            // Actualizar contador del Feed
+            document.getElementById("newsCount").textContent = filteredData.length;
 
-/* ==========================================================================
-   UTILIDADES
-   ========================================================================== */
-function formatFecha(isoDate) {
-  const [y, m, d] = isoDate.split("-");
-  const meses = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
-  return `${parseInt(d)} ${meses[parseInt(m)-1]} ${y}`;
-}
-</script>
+            // Renderizados
+            renderNewsCards(filteredData);
+            updateCharts(filteredData);
+        }
+
+        // Generador visual de las tarjetas del Feed de Noticias
+        function renderNewsCards(data) {
+            const container = document.getElementById("newsFeed");
+            container.innerHTML = ""; // Limpieza previa
+
+            if (data.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-gray-500 bg-gray-800 rounded-xl border border-dashed border-gray-700">
+                        <i class="fa-solid fa-folder-open text-4xl mb-3"></i>
+                        <p>No se encontraron noticias bajo los criterios de filtrado seleccionados.</p>
+                    </div>`;
+                return;
+            }
+
+            data.forEach(news => {
+                // Definición visual de estilos según clasificación GPT-4o / VADER
+                let badgeColor, badgeBg, iconClass, borderColor;
+
+                if (news.gpt4_sentiment === "BULLISH") {
+                    badgeColor = "text-emerald-400";
+                    badgeBg = "bg-emerald-500/10";
+                    borderColor = "border-emerald-500/20";
+                    iconClass = "fa-solid fa-arrow-trend-up text-emerald-400";
+                } else if (news.gpt4_sentiment === "BEARISH") {
+                    badgeColor = "text-rose-400";
+                    badgeBg = "bg-rose-500/10";
+                    borderColor = "border-rose-500/20";
+                    iconClass = "fa-solid fa-arrow-trend-down text-rose-400";
+                } else {
+                    badgeColor = "text-gray-400";
+                    badgeBg = "bg-gray-500/10";
+                    borderColor = "border-gray-700";
+                    iconClass = "fa-solid fa-minus text-gray-400";
+                }
+
+                const cardHtml = `
+                    <div class="bg-gray-800 rounded-xl border ${borderColor} p-5 flex flex-col justify-between hover:shadow-2xl transition duration-200">
+                        <div>
+                            <!-- Fila Superior Meta -->
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="bg-blue-600/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded text-xs font-bold font-mono">
+                                    ${news.ticker}
+                                </span>
+                                <div class="text-xs text-gray-400 flex items-center gap-2">
+                                    <span>${news.fuente}</span>
+                                    <span>•</span>
+                                    <span>${news.fecha}</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Título -->
+                            <h3 class="text-base font-bold text-gray-100 leading-snug mb-2 hover:text-blue-400 transition cursor-pointer">
+                                ${news.titulo}
+                            </h3>
+                            
+                            <!-- Resumen corporativo -->
+                            <p class="text-xs text-gray-400 line-clamp-3 mb-4">
+                                ${news.resumen}
+                            </p>
+                        </div>
+
+                        <!-- Panel Inferior de Métricas NLP -->
+                        <div class="pt-3 border-t border-gray-700/60 flex justify-between items-center mt-auto">
+                            <div class="flex flex-col">
+                                <span class="text-[10px] uppercase font-bold text-gray-500">VADER Compound</span>
+                                <span class="text-xs font-mono font-bold ${news.vader_compound >= 0.05 ? 'text-emerald-400' : news.vader_compound <= -0.05 ? 'text-rose-400' : 'text-gray-400'}">
+                                    ${news.vader_compound > 0 ? '+' : ''}${news.vader_compound.toFixed(2)}
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2 ${badgeBg} ${badgeColor} px-3 py-1 rounded-lg border border-current/10">
+                                <i class="${iconClass}"></i>
+                                <span class="text-xs font-bold font-mono">${news.gpt4_sentiment}</span>
+                            </div>
+                        </div>
+                    </div>`;
+                container.insertAdjacentHTML("beforeend", cardHtml);
+            });
+        }
+
+        // Orquestador de actualizaciones de gráficos analíticos
+        function updateCharts(filteredData) {
+            // 1. Conteo de categorías para gráfico de distribución
+            let bullishCount = 0;
+            let neutralCount = 0;
+            let bearishCount = 0;
+            let totalCompound = 0;
+
+            filteredData.forEach(item => {
+                totalCompound += item.vader_compound;
+                if (item.gpt4_sentiment === "BULLISH") bullishCount++;
+                else if (item.gpt4_sentiment === "BEARISH") bearishCount++;
+                else neutralCount++;
+            });
+
+            const totalItems = filteredData.length || 1;
+            const avgCompound = totalCompound / totalItems; // Rango teórico de -1 a +1
+
+            // ---- GRÁFICO 1: BARRAS HORIZONTALES (DISTRIBUCIÓN) ----
+            if (distributionChartInstance) distributionChartInstance.destroy();
+            
+            const ctxBar = document.getElementById('distributionChart').getContext('2d');
+            distributionChartInstance = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Bullish', 'Neutral', 'Bearish'],
+                    datasets: [{
+                        data: [bullishCount, neutralCount, bearishCount],
+                        backgroundColor: ['rgba(16, 185, 129, 0.8)', 'rgba(107, 114, 128, 0.8)', 'rgba(244, 63, 94, 0.8)'],
+                        borderColor: ['#10b981', '#6b7280', '#f43f5e'],
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#374151' }, ticks: { color: '#9ca3af', precision: 0 } },
+                        y: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+                    }
+                }
+            });
+
+            // ---- GRÁFICO 2: GAUGE VELOCÍMETRO (SENTIMIENTO AGREGADO) ----
+            // Transformar rango analítico VADER (-1 a 1) a escala clásica de mercado (0 a 100)
+            const scaledGaugeValue = Math.round(((avgCompound + 1) / 2) * 100);
+            
+            // Determinar etiquetas cualitativas del indicador agregado
+            let aggregateLabel = "NEUTRAL";
+            let labelColor = "#9ca3af";
+            if (avgCompound >= 0.15) { aggregateLabel = "ALCISTA (GREED)"; labelColor = "#10b981"; }
+            else if (avgCompound <= -0.15) { aggregateLabel = "BAJISTA (FEAR)"; labelColor = "#f43f5e"; }
+
+            document.getElementById("gaugeValue").textContent = filteredData.length ? scaledGaugeValue : "-";
+            document.getElementById("gaugeLabel").textContent = filteredData.length ? aggregateLabel : "SIN DATOS";
+            document.getElementById("gaugeLabel").style.color = labelColor;
+
+            if (gaugeChartInstance) gaugeChartInstance.destroy();
+
+            const ctxGauge = document.getElementById('gaugeChart').getContext('2d');
+            gaugeChartInstance = new Chart(ctxGauge, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: filteredData.length ? [scaledGaugeValue, 100 - scaledGaugeValue] : [0, 100],
+                        backgroundColor: [labelColor, '#374151'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    rotation: 270, // Inicio del semicírculo inferior izquierdo
+                    circumference: 180, // Generar arco de 180 grados
+                    cutout: '80%', // Efecto de anillo delgado para el tacómetro
+                    plugins: { tooltip: { enabled: false } }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
