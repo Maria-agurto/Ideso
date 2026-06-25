@@ -101,11 +101,10 @@
       background: rgba(255,255,255,0.07);
     }
 
-    /* Estilo del Módulo Activo: Fondo azul muy oscuro y texto en color dorado */
     .nav-tab.active {
       color: var(--accent-light);
       border-bottom-color: var(--accent);
-      background: #11213D; /* Azul oscuro profundo de activación */
+      background: #11213D;
       font-weight: 700;
     }
 
@@ -452,7 +451,7 @@
     .log-level.SUCCESS { color: #3FB950; }
     .log-level.WARN    { color: #D29922; }
     .log-level.ERROR   { color: #F85149; }
-    
+     
     .log-msg { color: #C9D1D9; }
 
     .console-statusbar { background: #161B22; border-top: 1px solid #30363D; padding: 6px 16px; display: flex; align-items: center; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; }
@@ -488,17 +487,17 @@
       InvestAI
     </div>
     <div class="navbar-tabs" role="tablist">
-      <a href="#" class="nav-tab" role="tab" aria-selected="false">1. Autenticación (M1)</a>
-      <a href="#" class="nav-tab active" role="tab" aria-selected="true">2. Ingesta de Datos (M2)</a>
-      <a href="#" class="nav-tab" role="tab" aria-selected="false">3. Clasificación (M3)</a>
-      <a href="#" class="nav-tab" role="tab" aria-selected="false">4. Regresión (M4)</a>
-      <a href="#" class="nav-tab" role="tab" aria-selected="false">5. Análisis NLP (M5)</a>
-      <a href="#" class="nav-tab" role="tab" aria-selected="false">6. Core Predictivo (M6)</a>
-      <a href="#" class="nav-tab" role="tab" aria-selected="false">7. Estrategias (M7)</a>
-      <a href="#" class="nav-tab" role="tab" aria-selected="false">8. Órdenes (M8)</a>
-      <a href="#" class="nav-tab" role="tab" aria-selected="false">9. Portafolios (M9)</a>
-      <a href="#" class="nav-tab" role="tab" aria-selected="false">10. Consola (M10)</a>
-      <a href="#" class="nav-tab" role="tab" aria-selected="false">11. Backtesting (M11)</a>
+      <a href="modulo6.1-autenticacion.html" class="nav-tab" role="tab" aria-selected="false">1. Autenticación (M1)</a>
+      <a href="modulo6.2-mercado.html" class="nav-tab active" role="tab" aria-selected="true">2. Ingesta de Datos (M2)</a>
+      <a href="Prediccion con SVM/" class="nav-tab" role="tab" aria-selected="false">3. Clasificación (M3)</a>
+      <a href="Pronostico con LSTM/" class="nav-tab" role="tab" aria-selected="false">4. Regresión (M4)</a>
+      <a href="modulo6.5-nlp-operaciones.html" class="nav-tab" role="tab" aria-selected="false">5. Análisis NLP (M5)</a>
+      <a href="modulo6.6-core-predictivo-central.html" class="nav-tab" role="tab" aria-selected="false">6. Core Predictivo (M6)</a>
+      <a href="modulo6.7-estrategias.html" class="nav-tab" role="tab" aria-selected="false">7. Estrategias (M7)</a>
+      <a href="modulo6.8-ordenes.html" class="nav-tab" role="tab" aria-selected="false">8. Órdenes (M8)</a>
+      <a href="modulo6.9-portafolio.html" class="nav-tab" role="tab" aria-selected="false">9. Portafolios (M9)</a>
+      <a href="modulo6.10-consola.html" class="nav-tab" role="tab" aria-selected="false">10. Consola (M10)</a>
+      <a href="modulo6.11-backtesting.html" class="nav-tab" role="tab" aria-selected="false">11. Backtesting (M11)</a>
     </div>
     <div class="live-badge" aria-live="polite"><div class="live-dot"></div>EN VIVO</div>
   </nav>
@@ -833,12 +832,12 @@
 
       } else {
         isIngesting = false;
+        logToConsole('WARN', 'Ingesta de datos detenida por el operador.');
+        clearInterval(ingestInterval);
         btn.classList.remove('ingesting');
         txt.textContent = "Iniciar Ingesta en Tiempo Real";
         statusIndicator.innerHTML = "● STREAMING_IDLE";
         statusIndicator.style.color = "#3FB950";
-        logToConsole('WARN', 'Ingesta de datos detenida por el operador.');
-        clearInterval(ingestInterval);
       }
     }
 
@@ -849,7 +848,7 @@
       }, 800);
     }
 
-    // Carga inicial
+    // --- CARGA INICIAL POR VENTANA ---
     window.onload = () => {
       renderChips();
       updateLivePriceDisplay();
