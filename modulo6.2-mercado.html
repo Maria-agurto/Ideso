@@ -3,16 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>InvestAI — Módulo 6.2 Ingesta y Monitoreo de Mercado</title>
+  <title>InvestAI — Módulo 2 Ingesta de Datos</title>
 
-  <!-- Plotly.js vía CDN: única librería externa permitida -->
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 
   <style>
     /* ============================================================
        VARIABLES CSS — PALETA CORPORATIVA INVESTAI
-       Todos los colores provienen de este bloque central
-       para garantizar coherencia y fácil mantenimiento.
     ============================================================ */
     :root {
       --bg-main:       #F5F7FA; /* Fondo general gris claro */
@@ -47,8 +44,7 @@
     }
 
     /* ============================================================
-       BARRA DE NAVEGACIÓN SUPERIOR — InvestAI Global Nav
-       Posición fija para que siempre sea visible al hacer scroll.
+       BARRA DE NAVEGACIÓN SUPERIOR FIXED (NAVBAR CORREGIDA)
     ============================================================ */
     .navbar {
       position: fixed;
@@ -60,10 +56,8 @@
       padding: 0 20px;
       z-index: 1000;
       box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-      gap: 0;
     }
 
-    /* Logotipo / nombre del sistema a la izquierda */
     .navbar-brand {
       display: flex;
       align-items: center;
@@ -76,31 +70,26 @@
       margin-right: 28px;
     }
 
-    /* Icono SVG del logo */
-    .navbar-brand svg {
-      width: 28px; height: 28px;
-    }
+    .navbar-brand svg { width: 28px; height: 28px; }
 
-    /* Contenedor de pestañas de navegación */
     .navbar-tabs {
       display: flex;
       align-items: stretch;
       height: 100%;
       gap: 2px;
       overflow-x: auto;
-      scrollbar-width: none; /* Firefox: oculta scrollbar */
+      scrollbar-width: none;
     }
-    .navbar-tabs::-webkit-scrollbar { display: none; } /* Chrome: oculta scrollbar */
+    .navbar-tabs::-webkit-scrollbar { display: none; }
 
-    /* Pestaña individual */
     .nav-tab {
       display: flex;
       align-items: center;
-      padding: 0 14px;
+      padding: 0 12px;
       color: rgba(255,255,255,0.65);
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 500;
-      cursor: pointer;
+      text-decoration: none;
       white-space: nowrap;
       border-bottom: 3px solid transparent;
       transition: color 0.2s, border-color 0.2s, background 0.2s;
@@ -112,14 +101,14 @@
       background: rgba(255,255,255,0.07);
     }
 
-    /* Pestaña activa — acento dorado en el borde inferior */
+    /* Estilo del Módulo Activo: Fondo azul muy oscuro y texto en color dorado */
     .nav-tab.active {
       color: var(--accent-light);
       border-bottom-color: var(--accent);
-      background: rgba(197, 150, 26, 0.12);
+      background: #11213D; /* Azul oscuro profundo de activación */
+      font-weight: 700;
     }
 
-    /* Indicador de estado en tiempo real junto al logo */
     .live-badge {
       display: flex;
       align-items: center;
@@ -130,9 +119,9 @@
       font-weight: 600;
       letter-spacing: 0.8px;
       flex-shrink: 0;
+      padding-left: 10px;
     }
 
-    /* Punto parpadeante para indicar "en vivo" */
     .live-dot {
       width: 7px; height: 7px;
       background: var(--success);
@@ -146,7 +135,7 @@
     }
 
     /* ============================================================
-       LAYOUT PRINCIPAL — Cuadrícula responsiva del dashboard
+       LAYOUT PRINCIPAL
     ============================================================ */
     .page-wrapper {
       padding-top: calc(var(--nav-height) + 16px);
@@ -157,7 +146,6 @@
       margin: 0 auto;
     }
 
-    /* Encabezado de sección con título y fecha/hora */
     .page-header {
       display: flex;
       align-items: flex-end;
@@ -184,7 +172,6 @@
       margin-bottom: 4px;
     }
 
-    /* Reloj en tiempo real */
     .clock {
       font-size: 12px;
       color: var(--text-muted);
@@ -200,7 +187,6 @@
       letter-spacing: 1px;
     }
 
-    /* ── Fila 1: Panel de control + Estado de APIs ── */
     .row-top {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -208,16 +194,10 @@
       margin-bottom: 16px;
     }
 
-    /* ── Fila 2: Gráfico principal (ocupa todo el ancho) ── */
-    .row-chart {
-      margin-bottom: 16px;
-    }
-
-    /* ── Fila 3: Consola de logs (todo el ancho) ── */
-    .row-console { /* sin margen inferior extra */ }
+    .row-chart { margin-bottom: 16px; }
 
     /* ============================================================
-       COMPONENTE TARJETA — Base reutilizable para todos los paneles
+       COMPONENTE TARJETA
     ============================================================ */
     .card {
       background: var(--bg-card);
@@ -227,7 +207,6 @@
       padding: 20px 22px;
     }
 
-    /* Encabezado de tarjeta: título a la izquierda, acción opcional a la derecha */
     .card-header {
       display: flex;
       align-items: center;
@@ -247,7 +226,6 @@
       gap: 7px;
     }
 
-    /* Línea decorativa dorada antes del título */
     .card-title::before {
       content: '';
       display: inline-block;
@@ -260,8 +238,6 @@
     /* ============================================================
        PANEL 1 — CONTROL DE INGESTA DE ACTIVOS
     ============================================================ */
-
-    /* Fila de campos del formulario de ingesta */
     .ingest-controls {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -269,7 +245,6 @@
       margin-bottom: 16px;
     }
 
-    /* Etiqueta de campo */
     .field-label {
       font-size: 11px;
       font-weight: 600;
@@ -279,7 +254,6 @@
       margin-bottom: 6px;
     }
 
-    /* Selector genérico estilizado */
     .styled-select {
       width: 100%;
       padding: 9px 12px;
@@ -299,47 +273,34 @@
     }
     .styled-select:focus { border-color: var(--primary); }
 
-    /* Chips de tickers seleccionados */
     .ticker-chips {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
       margin-top: 8px;
+      min-height: 28px;
     }
 
     .chip {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       padding: 4px 10px;
       border-radius: 20px;
       background: #EEF2FF;
       color: var(--primary);
       font-size: 12px;
       font-weight: 600;
-      cursor: pointer;
       border: 1.5px solid transparent;
       transition: all 0.15s;
       user-select: none;
     }
 
     .chip:hover { border-color: var(--primary); background: #E0E7FF; }
+    .chip.selected { background: var(--primary); color: #FFF; border-color: var(--primary); }
+    .chip-remove { font-size: 14px; line-height: 1; opacity: 0.7; cursor: pointer; }
+    .chip-remove:hover { opacity: 1; }
 
-    /* Chip activo/seleccionado — fondo primario */
-    .chip.selected {
-      background: var(--primary);
-      color: #FFF;
-      border-color: var(--primary);
-    }
-
-    /* Botón de eliminar chip (×) */
-    .chip-remove {
-      font-size: 14px;
-      line-height: 1;
-      opacity: 0.7;
-    }
-
-    /* Botón de iniciar ingesta */
     .btn-ingest {
       width: 100%;
       margin-top: 16px;
@@ -355,12 +316,10 @@
       justify-content: center;
       gap: 8px;
       transition: all 0.2s;
-      /* Estado inicial: inactivo */
       background: var(--primary);
       color: #FFF;
     }
 
-    /* Estado activo del botón de ingesta */
     .btn-ingest.ingesting {
       background: var(--success);
       animation: pulse-btn 2s ease-in-out infinite;
@@ -377,7 +336,6 @@
       box-shadow: 0 4px 12px rgba(31,56,100,0.3);
     }
 
-    /* Estadísticas rápidas bajo el botón */
     .ingest-stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -393,35 +351,17 @@
       border: 1px solid var(--border);
     }
 
-    .stat-mini-val {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--primary);
-      font-variant-numeric: tabular-nums;
-    }
-
-    .stat-mini-label {
-      font-size: 10px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+    .stat-mini-val { font-size: 18px; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; }
+    .stat-mini-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
     /* ============================================================
        PANEL 2 — ESTADO DE CONEXIÓN DE CAPAS DE DATOS (APIs)
     ============================================================ */
+    .api-list { display: flex; flex-direction: column; gap: 10px; }
 
-    /* Lista de widgets de estado de API */
-    .api-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    /* Widget individual de estado de API */
     .api-widget {
       display: grid;
-      grid-template-columns: auto 1fr auto auto;
+      grid-template-columns: auto 1fr auto;
       align-items: center;
       gap: 12px;
       padding: 12px 14px;
@@ -431,56 +371,17 @@
       transition: border-color 0.3s;
     }
 
-    /* Resalte cuando la API está en error */
     .api-widget.error { border-color: var(--danger); background: #FFF8F8; }
+    .api-name { font-size: 13px; font-weight: 700; color: var(--primary); }
+    .api-metrics { display: flex; gap: 16px; justify-self: end; }
+    .api-metric { text-align: right; }
+    .api-metric-val { font-size: 14px; font-weight: 700; color: var(--text-main); font-variant-numeric: tabular-nums; }
+    .api-metric-unit { font-size: 10px; color: var(--text-muted); }
 
-    /* Nombre e icono de la API */
-    .api-name {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--primary);
-    }
-
-    .api-source {
-      font-size: 10px;
-      color: var(--text-muted);
-      font-weight: 400;
-    }
-
-    /* Métricas de la API: latencia y tasa */
-    .api-metrics {
-      display: flex;
-      gap: 16px;
-      justify-self: end;
-    }
-
-    .api-metric {
-      text-align: right;
-    }
-
-    .api-metric-val {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-main);
-      font-variant-numeric: tabular-nums;
-    }
-
-    .api-metric-unit {
-      font-size: 10px;
-      color: var(--text-muted);
-    }
-
-    /* Indicador de estado circular */
-    .status-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
     .status-dot.connected { background: var(--success); box-shadow: 0 0 6px rgba(40,167,69,0.5); }
     .status-dot.error     { background: var(--danger);  box-shadow: 0 0 6px rgba(220,53,69,0.5); }
-    .status-dot.syncing   { background: var(--warning); animation: blink 0.8s ease-in-out infinite; }
 
-    /* Botón de sincronización forzada */
     .btn-sync {
       padding: 8px 14px;
       border: 1.5px solid var(--accent);
@@ -494,43 +395,16 @@
       transition: all 0.2s;
       white-space: nowrap;
     }
+    .btn-sync:hover { background: var(--accent); color: #FFF; }
 
-    .btn-sync:hover {
-      background: var(--accent);
-      color: #FFF;
-    }
-
-    /* Historial visual de latencia (mini-sparkline en CSS) */
-    .latency-bar {
-      height: 4px;
-      border-radius: 2px;
-      background: var(--border);
-      margin-top: 4px;
-      overflow: hidden;
-    }
-
-    .latency-fill {
-      height: 100%;
-      border-radius: 2px;
-      transition: width 0.5s ease, background 0.5s ease;
-    }
+    .latency-bar { height: 4px; border-radius: 2px; background: var(--border); margin-top: 4px; overflow: hidden; width: 120px; }
+    .latency-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease, background 0.5s ease; }
 
     /* ============================================================
-       PANEL 3 — GRÁFICO BURSÁTIL (Candlestick + Volumen)
+       PANEL 3 — GRÁFICO BURSÁTIL
     ============================================================ */
-    .chart-controls {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    /* Selector de activo a graficar */
-    .chart-asset-selector {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
+    .chart-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .chart-asset-selector { display: flex; gap: 6px; flex-wrap: wrap; }
 
     .asset-btn {
       padding: 5px 12px;
@@ -543,207 +417,69 @@
       cursor: pointer;
       transition: all 0.15s;
     }
-
     .asset-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .asset-btn.active { background: var(--primary); border-color: var(--primary); color: #FFF; }
 
-    .asset-btn.active {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: #FFF;
-    }
-
-    /* Precio actual grande junto al selector */
-    .price-display {
-      margin-left: auto;
-      text-align: right;
-    }
-
-    .price-value {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--primary);
-      font-variant-numeric: tabular-nums;
-    }
-
-    .price-change {
-      font-size: 12px;
-      font-weight: 600;
-    }
+    .price-display { margin-left: auto; text-align: right; }
+    .price-value { font-size: 22px; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; }
+    .price-change { font-size: 12px; font-weight: 600; }
     .price-change.up   { color: var(--success); }
     .price-change.down { color: var(--danger); }
 
-    /* Contenedor del gráfico de Plotly — altura fija */
-    #chart-candlestick {
-      width: 100%;
-      height: 420px;
-    }
+    #chart-candlestick { width: 100%; height: 420px; }
 
     /* ============================================================
        PANEL 4 — CONSOLA DE LOGS DEL SISTEMA
-       Estética terminal hacker/CLI
     ============================================================ */
-    .console-wrapper {
-      background: #0D1117;
-      border-radius: var(--radius);
-      border: 1px solid #30363D;
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    /* Barra de título de la terminal (como ventana macOS) */
-    .console-titlebar {
-      background: #161B22;
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border-bottom: 1px solid #30363D;
-    }
-
-    /* Botones decorativos de ventana */
-    .win-btn {
-      width: 12px; height: 12px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
+    .console-wrapper { background: #0D1117; border-radius: var(--radius); border: 1px solid #30363D; box-shadow: var(--shadow); overflow: hidden; }
+    .console-titlebar { background: #161B22; padding: 10px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #30363D; }
+    .win-btn { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
     .win-btn.close  { background: #FF5F57; }
     .win-btn.min    { background: #FEBC2E; }
     .win-btn.max    { background: #28C840; }
+    .console-title-text { font-size: 12px; color: #8B949E; font-family: var(--font-mono); margin-left: 4px; }
 
-    .console-title-text {
-      font-size: 12px;
-      color: #8B949E;
-      font-family: var(--font-mono);
-      margin-left: 4px;
-    }
-
-    /* Área desplazable de logs */
-    .console-output {
-      height: 220px;
-      overflow-y: auto;
-      padding: 14px 16px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      line-height: 1.7;
-      /* Scroll suave */
-      scroll-behavior: smooth;
-    }
-
-    /* Scroll personalizado para la consola */
+    .console-output { height: 220px; overflow-y: auto; padding: 14px 16px; font-family: var(--font-mono); font-size: 12px; line-height: 1.7; scroll-behavior: smooth; }
     .console-output::-webkit-scrollbar       { width: 6px; }
     .console-output::-webkit-scrollbar-track { background: #0D1117; }
     .console-output::-webkit-scrollbar-thumb { background: #30363D; border-radius: 3px; }
 
-    /* Línea individual de log */
-    .log-line {
-      display: flex;
-      gap: 10px;
-      animation: log-appear 0.2s ease-out;
-    }
-
-    @keyframes log-appear {
-      from { opacity: 0; transform: translateX(-4px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
-
-    /* Timestamp en el log */
-    .log-ts {
-      color: #3C4A5C;
-      flex-shrink: 0;
-    }
-
-    /* Nivel de log — colores semánticos */
+    .log-line { display: flex; gap: 10px; animation: log-appear 0.2s ease-out; }
+    @keyframes log-appear { from { opacity: 0; transform: translateX(-4px); } to   { opacity: 1; transform: translateX(0); } }
+    .log-ts { color: #3C4A5C; flex-shrink: 0; }
     .log-level { font-weight: 700; flex-shrink: 0; }
-    .log-level.INFO    { color: #58A6FF; }   /* Azul */
-    .log-level.SUCCESS { color: #3FB950; }   /* Verde */
-    .log-level.WARN    { color: #D29922; }   /* Naranja */
-    .log-level.ERROR   { color: #F85149; }   /* Rojo */
-    .log-level.DEBUG   { color: #8B949E; }   /* Gris */
-
-    /* Texto del mensaje de log */
+    .log-level.INFO    { color: #58A6FF; }
+    .log-level.SUCCESS { color: #3FB950; }
+    .log-level.WARN    { color: #D29922; }
+    .log-level.ERROR   { color: #F85149; }
+    
     .log-msg { color: #C9D1D9; }
 
-    /* Indicador de actividad de escritura al final de la consola */
-    .log-cursor {
-      display: inline-block;
-      width: 8px; height: 14px;
-      background: #3FB950;
-      animation: cursor-blink 1s step-end infinite;
-      vertical-align: middle;
-      margin-left: 2px;
-    }
-
-    @keyframes cursor-blink {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0; }
-    }
-
-    /* Barra de estado inferior de la consola */
-    .console-statusbar {
-      background: #161B22;
-      border-top: 1px solid #30363D;
-      padding: 6px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-family: var(--font-mono);
-      font-size: 11px;
-    }
-
+    .console-statusbar { background: #161B22; border-top: 1px solid #30363D; padding: 6px 16px; display: flex; align-items: center; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; }
     .console-status-left  { color: #3FB950; }
     .console-status-right { color: #8B949E; }
 
     /* ============================================================
-       RESPONSIVE — Ajustes para pantallas móviles (≤ 768px)
+       RESPONSIVE
     ============================================================ */
+    @media (max-width: 1024px) {
+      .navbar-tabs { gap: 1px; }
+      .nav-tab { padding: 0 8px; font-size: 11px; }
+    }
     @media (max-width: 768px) {
       .page-wrapper { padding-left: 12px; padding-right: 12px; }
-
-      /* La fila superior pasa a columna única */
       .row-top { grid-template-columns: 1fr; }
-
-      /* Los campos de ingesta en columna única */
       .ingest-controls { grid-template-columns: 1fr; }
-
-      /* Métricas en fila horizontal desplazable */
-      .api-widget {
-        grid-template-columns: auto 1fr;
-        grid-template-rows: auto auto;
-        row-gap: 8px;
-      }
-
-      .api-metrics { grid-column: 1 / -1; justify-self: start; }
-
-      /* Ocultar texto de pestañas largas, mostrar solo las más cortas */
-      .nav-tab { padding: 0 10px; font-size: 11.5px; }
-
-      /* Gráfico más alto en móvil para mejor legibilidad */
+      .api-widget { grid-template-columns: auto 1fr; }
       #chart-candlestick { height: 340px; }
-
       .price-value { font-size: 18px; }
     }
-
-    /* ============================================================
-       SCROLLBAR GLOBAL SUAVIZADO
-    ============================================================ */
-    ::-webkit-scrollbar       { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: var(--bg-main); }
-    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
-
   </style>
 </head>
 <body>
 
-  <!-- ============================================================
-       BARRA DE NAVEGACIÓN SUPERIOR GLOBAL — InvestAI
-       Fija en la parte superior de la pantalla durante todo el
-       recorrido del usuario por el sistema.
-  ============================================================ -->
   <nav class="navbar" role="navigation" aria-label="Navegación principal InvestAI">
-
-    <!-- Logotipo e identidad del sistema -->
     <div class="navbar-brand">
-      <!-- Icono SVG de gráfico estilizado como logo -->
       <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect width="32" height="32" rx="6" fill="#C5961A" opacity="0.15"/>
         <polyline points="4,24 10,14 16,18 22,8 28,12" stroke="#C5961A" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -751,59 +487,37 @@
       </svg>
       InvestAI
     </div>
-
-    <!-- Pestañas de los módulos del sistema -->
     <div class="navbar-tabs" role="tablist">
-      <div class="nav-tab active" role="tab" aria-selected="true" tabindex="0">Mercado 6.2</div>
-      <div class="nav-tab" role="tab" aria-selected="false" tabindex="-1">Predicciones 6.3–6.4</div>
-      <div class="nav-tab" role="tab" aria-selected="false" tabindex="-1">NLP Noticias 6.5</div>
-      <div class="nav-tab" role="tab" aria-selected="false" tabindex="-1">Métricas 6.6–6.7</div>
-      <div class="nav-tab" role="tab" aria-selected="false" tabindex="-1">Órdenes 6.8</div>
-      <div class="nav-tab" role="tab" aria-selected="false" tabindex="-1">Consola Financiera 6.9–6.11</div>
+      <a href="#" class="nav-tab" role="tab" aria-selected="false">1. Autenticación (M1)</a>
+      <a href="#" class="nav-tab active" role="tab" aria-selected="true">2. Ingesta de Datos (M2)</a>
+      <a href="#" class="nav-tab" role="tab" aria-selected="false">3. Clasificación (M3)</a>
+      <a href="#" class="nav-tab" role="tab" aria-selected="false">4. Regresión (M4)</a>
+      <a href="#" class="nav-tab" role="tab" aria-selected="false">5. Análisis NLP (M5)</a>
+      <a href="#" class="nav-tab" role="tab" aria-selected="false">6. Core Predictivo (M6)</a>
+      <a href="#" class="nav-tab" role="tab" aria-selected="false">7. Estrategias (M7)</a>
+      <a href="#" class="nav-tab" role="tab" aria-selected="false">8. Órdenes (M8)</a>
+      <a href="#" class="nav-tab" role="tab" aria-selected="false">9. Portafolios (M9)</a>
+      <a href="#" class="nav-tab" role="tab" aria-selected="false">10. Consola (M10)</a>
+      <a href="#" class="nav-tab" role="tab" aria-selected="false">11. Backtesting (M11)</a>
     </div>
-
-    <!-- Indicador de sesión activa en tiempo real -->
-    <div class="live-badge" aria-live="polite">
-      <div class="live-dot"></div>
-      EN VIVO
-    </div>
+    <div class="live-badge" aria-live="polite"><div class="live-dot"></div>EN VIVO</div>
   </nav>
 
-  <!-- ============================================================
-       CONTENIDO PRINCIPAL DEL DASHBOARD
-  ============================================================ -->
   <main class="page-wrapper" role="main">
-
-    <!-- Encabezado de página con título y reloj -->
     <header class="page-header">
-      <h1>
-        <span>Módulo 6.2</span>
-        Ingesta de Datos &amp; Monitoreo de Mercado
-      </h1>
+      <h1><span>Módulo M2</span>Ingesta de Datos &amp; Monitoreo de Mercado</h1>
       <div class="clock" aria-live="polite" aria-label="Hora actual">
         <div id="clock-date">Cargando...</div>
         <strong id="clock-time">--:--:--</strong>
       </div>
     </header>
 
-    <!-- ── FILA SUPERIOR: Control de ingesta + Estado de APIs ── -->
     <section class="row-top" aria-label="Controles y estado de conexión">
-
-      <!-- ═══════════════════════════════════════════════════════
-           PANEL 1: CONTROL DE INGESTA DE ACTIVOS
-           Permite seleccionar tickers, intervalo y lanzar ingesta.
-      ═══════════════════════════════════════════════════════ -->
       <div class="card" id="panel-ingest" aria-labelledby="ingest-title">
         <div class="card-header">
-          <div class="card-title" id="ingest-title">
-            Control de Ingesta de Activos
-          </div>
+          <div class="card-title" id="ingest-title">Control de Ingesta de Activos</div>
         </div>
-
-        <!-- Controles de selección -->
         <div class="ingest-controls">
-
-          <!-- Selector de ticker a añadir -->
           <div>
             <div class="field-label">Añadir Ticker</div>
             <select class="styled-select" id="ticker-select" aria-label="Seleccionar ticker">
@@ -815,1033 +529,332 @@
                 <option value="AMZN">AMZN — Amazon.com</option>
                 <option value="NVDA">NVDA — NVIDIA Corp.</option>
                 <option value="TSLA">TSLA — Tesla Inc.</option>
-                <option value="SPY">SPY — S&amp;P 500 ETF</option>
               </optgroup>
               <optgroup label="Criptomonedas">
                 <option value="BTC">BTC — Bitcoin</option>
                 <option value="ETH">ETH — Ethereum</option>
                 <option value="SOL">SOL — Solana</option>
-                <option value="BNB">BNB — Binance Coin</option>
               </optgroup>
             </select>
-            <!-- Chips de tickers activos -->
             <div class="ticker-chips" id="ticker-chips" role="list" aria-label="Tickers seleccionados"></div>
           </div>
-
-          <!-- Selector de intervalo de muestreo -->
           <div>
             <div class="field-label">Intervalo de Muestreo</div>
-            <select class="styled-select" id="interval-select" aria-label="Intervalo de muestreo">
+            <select class="styled-select" id="interval-select">
               <option value="1m">1 minuto</option>
               <option value="5m" selected>5 minutos</option>
-              <option value="15m">15 minutos</option>
               <option value="1h">1 hora</option>
-              <option value="4h">4 horas</option>
               <option value="1d">1 día</option>
-              <option value="1wk">1 semana</option>
             </select>
-
-            <!-- Selector de fuente de datos -->
             <div class="field-label" style="margin-top:12px;">Fuente de Datos</div>
-            <select class="styled-select" id="source-select" aria-label="Fuente de datos">
+            <select class="styled-select" id="source-select">
               <option value="yahoo">Yahoo Finance</option>
               <option value="cmc">CoinMarketCap</option>
               <option value="ib">Interactive Brokers</option>
-              <option value="all">Todas las fuentes</option>
             </select>
           </div>
         </div>
 
-        <!-- Botón principal de ingesta con estados visuales -->
-        <button class="btn-ingest" id="btn-ingest" aria-pressed="false" onclick="toggleIngesta()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path id="btn-icon-path" d="M13 2.05v2.02c3.95.49 7 3.85 7 7.93 0 3.21-1.81 6-4.72 7.72L13 17v5h5l-1.22-1.22C19.91 19.07 22 15.76 22 12c0-5.18-3.95-9.45-9-9.95M11 2.05C5.95 2.55 2 6.82 2 12c0 3.76 2.09 7.07 5.22 8.78L6 22h5V2.05z"/>
-          </svg>
+        <button class="btn-ingest" id="btn-ingest" onclick="toggleIngesta()">
           <span id="btn-ingest-text">Iniciar Ingesta en Tiempo Real</span>
         </button>
 
-        <!-- Estadísticas de sesión de ingesta -->
         <div class="ingest-stats">
-          <div class="stat-mini">
-            <div class="stat-mini-val" id="stat-rows">0</div>
-            <div class="stat-mini-label">Filas recibidas</div>
-          </div>
-          <div class="stat-mini">
-            <div class="stat-mini-val" id="stat-tickers">0</div>
-            <div class="stat-mini-label">Tickers activos</div>
-          </div>
-          <div class="stat-mini">
-            <div class="stat-mini-val" id="stat-errors">0</div>
-            <div class="stat-mini-label">Errores</div>
-          </div>
+          <div class="stat-mini"><div class="stat-mini-val" id="stat-rows">0</div><div class="stat-mini-label">Filas</div></div>
+          <div class="stat-mini"><div class="stat-mini-val" id="stat-tickers">0</div><div class="stat-mini-label">Activos</div></div>
+          <div class="stat-mini"><div class="stat-mini-val" id="stat-errors">0</div><div class="stat-mini-label">Errores</div></div>
         </div>
       </div>
 
-      <!-- ═══════════════════════════════════════════════════════
-           PANEL 2: ESTADO DE CONEXIÓN DE CAPAS DE DATOS
-           Widgets de estado para cada proveedor de API.
-      ═══════════════════════════════════════════════════════ -->
       <div class="card" id="panel-apis" aria-labelledby="apis-title">
         <div class="card-header">
-          <div class="card-title" id="apis-title">
-            Estado de Conexión — APIs
-          </div>
-          <!-- Botón de sincronización manual global -->
-          <button class="btn-sync" onclick="forceSyncAll()" aria-label="Forzar sincronización de todas las APIs">
-            ↺ Forzar Sincronización
-          </button>
+          <div class="card-title" id="apis-title">Estado de Conexión — APIs</div>
+          <button class="btn-sync" onclick="forceSyncAll()">↺ Sincronizar</button>
         </div>
-
-        <!-- Lista de widgets de APIs proveedoras -->
-        <div class="api-list" id="api-list" role="list">
-
-          <!-- Yahoo Finance -->
-          <div class="api-widget" id="api-yahoo" role="listitem">
-            <div class="status-dot connected" id="dot-yahoo" aria-label="Estado: Conectado"></div>
+        <div class="api-list" id="api-list">
+          <div class="api-widget" id="api-yahoo">
+            <div class="status-dot connected" id="dot-yahoo"></div>
             <div>
               <div class="api-name">Yahoo Finance</div>
-              <div class="api-source">Renta variable · ETFs · Futuros</div>
               <div class="latency-bar"><div class="latency-fill" id="lat-bar-yahoo" style="width:30%; background:var(--success);"></div></div>
             </div>
             <div class="api-metrics">
-              <div class="api-metric">
-                <div class="api-metric-val" id="lat-yahoo">42</div>
-                <div class="api-metric-unit">ms latencia</div>
-              </div>
-              <div class="api-metric">
-                <div class="api-metric-val" id="rate-yahoo">1.8k</div>
-                <div class="api-metric-unit">rows/sec</div>
-              </div>
+              <div class="api-metric"><div class="api-metric-val" id="lat-yahoo">42</div><div class="api-metric-unit">ms</div></div>
             </div>
           </div>
-
-          <!-- CoinMarketCap -->
-          <div class="api-widget" id="api-cmc" role="listitem">
-            <div class="status-dot connected" id="dot-cmc" aria-label="Estado: Conectado"></div>
+          <div class="api-widget" id="api-cmc">
+            <div class="status-dot connected" id="dot-cmc"></div>
             <div>
               <div class="api-name">CoinMarketCap</div>
-              <div class="api-source">Criptomonedas · Tokens DeFi</div>
               <div class="latency-bar"><div class="latency-fill" id="lat-bar-cmc" style="width:45%; background:var(--success);"></div></div>
             </div>
             <div class="api-metrics">
-              <div class="api-metric">
-                <div class="api-metric-val" id="lat-cmc">89</div>
-                <div class="api-metric-unit">ms latencia</div>
-              </div>
-              <div class="api-metric">
-                <div class="api-metric-val" id="rate-cmc">940</div>
-                <div class="api-metric-unit">rows/sec</div>
-              </div>
+              <div class="api-metric"><div class="api-metric-val" id="lat-cmc">89</div><div class="api-metric-unit">ms</div></div>
             </div>
           </div>
-
-          <!-- Interactive Brokers -->
-          <div class="api-widget" id="api-ib" role="listitem">
-            <div class="status-dot connected" id="dot-ib" aria-label="Estado: Conectado"></div>
-            <div>
-              <div class="api-name">Interactive Brokers</div>
-              <div class="api-source">Opciones · Bonos · CFDs</div>
-              <div class="latency-bar"><div class="latency-fill" id="lat-bar-ib" style="width:20%; background:var(--success);"></div></div>
-            </div>
-            <div class="api-metrics">
-              <div class="api-metric">
-                <div class="api-metric-val" id="lat-ib">28</div>
-                <div class="api-metric-unit">ms latencia</div>
-              </div>
-              <div class="api-metric">
-                <div class="api-metric-val" id="rate-ib">3.2k</div>
-                <div class="api-metric-unit">rows/sec</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- WebSocket interno -->
-          <div class="api-widget" id="api-ws" role="listitem">
-            <div class="status-dot connected" id="dot-ws" aria-label="Estado: Conectado"></div>
-            <div>
-              <div class="api-name">WebSocket Interno</div>
-              <div class="api-source">Bus de datos en tiempo real</div>
-              <div class="latency-bar"><div class="latency-fill" id="lat-bar-ws" style="width:10%; background:var(--success);"></div></div>
-            </div>
-            <div class="api-metrics">
-              <div class="api-metric">
-                <div class="api-metric-val" id="lat-ws">8</div>
-                <div class="api-metric-unit">ms latencia</div>
-              </div>
-              <div class="api-metric">
-                <div class="api-metric-val" id="rate-ws">12k</div>
-                <div class="api-metric-unit">rows/sec</div>
-              </div>
-            </div>
-          </div>
-
-        </div><!-- /.api-list -->
+        </div>
       </div>
+    </section>
 
-    </section><!-- /.row-top -->
-
-    <!-- ── FILA 2: GRÁFICO BURSÁTIL AVANZADO ── -->
     <section class="row-chart" aria-labelledby="chart-title">
       <div class="card">
         <div class="card-header">
-          <div class="card-title" id="chart-title">
-            Gráfico de Velas Japonesas + Volumen
-          </div>
-
-          <!-- Selector de activo a visualizar + precio en tiempo real -->
+          <div class="card-title" id="chart-title">Visualización de Mercado Pro</div>
           <div class="chart-controls">
-            <div class="chart-asset-selector" role="group" aria-label="Seleccionar activo a graficar">
-              <button class="asset-btn active" onclick="cambiarActivo('AAPL', this)">AAPL</button>
-              <button class="asset-btn" onclick="cambiarActivo('MSFT', this)">MSFT</button>
-              <button class="asset-btn" onclick="cambiarActivo('BTC', this)">BTC</button>
-              <button class="asset-btn" onclick="cambiarActivo('ETH', this)">ETH</button>
-              <button class="asset-btn" onclick="cambiarActivo('NVDA', this)">NVDA</button>
-            </div>
-
-            <!-- Precio actual con variación porcentual -->
-            <div class="price-display" aria-live="polite">
-              <div class="price-value" id="price-current">$189.84</div>
-              <div class="price-change up" id="price-change">▲ +1.24%</div>
+            <div class="chart-asset-selector" id="chart-asset-selector"></div>
+            <div class="price-display">
+              <div class="price-value" id="live-price">$0.00</div>
+              <div class="price-change up" id="live-change">+0.00%</div>
             </div>
           </div>
         </div>
-
-        <!-- Contenedor del gráfico Plotly — candlestick + volumen -->
-        <div id="chart-candlestick" role="img" aria-label="Gráfico de velas japonesas con volumen de transacciones"></div>
+        <div id="chart-candlestick"></div>
       </div>
     </section>
 
-    <!-- ── FILA 3: CONSOLA DE LOGS DEL SISTEMA ── -->
-    <section class="row-console" aria-labelledby="console-title">
-      <div class="card" style="padding:0; overflow:hidden;">
-        <div class="card-header" style="padding:16px 22px 0;">
-          <div class="card-title" id="console-title">
-            Consola del Sistema — Pipeline de Ingesta
-          </div>
-          <button
-            class="btn-sync"
-            onclick="limpiarConsola()"
-            aria-label="Limpiar consola de logs"
-          >✕ Limpiar</button>
+    <section class="row-console">
+      <div class="console-wrapper">
+        <div class="console-titlebar">
+          <div class="win-btn close"></div><div class="win-btn min"></div><div class="win-btn max"></div>
+          <div class="console-title-text">investai_kernel_stream.log</div>
         </div>
-
-        <!-- Terminal estilo CLI -->
-        <div class="console-wrapper" style="margin:12px 16px 0; border-radius:8px 8px 0 0;">
-
-          <!-- Barra de título de la ventana terminal -->
-          <div class="console-titlebar">
-            <div class="win-btn close"  title="Cerrar"></div>
-            <div class="win-btn min"    title="Minimizar"></div>
-            <div class="win-btn max"    title="Maximizar"></div>
-            <span class="console-title-text">investai@pipeline:~$ tail -f /var/log/investai/ingesta.log</span>
-          </div>
-
-          <!-- Área de logs desplazable -->
-          <div class="console-output" id="console-output" aria-live="polite" aria-atomic="false" aria-relevant="additions">
-            <!-- Las líneas de log se insertan dinámicamente por JS -->
-          </div>
-
-          <!-- Barra de estado inferior de la terminal -->
-          <div class="console-statusbar">
-            <span class="console-status-left" id="console-status">● ACTIVO — Escuchando eventos...</span>
-            <span class="console-status-right" id="console-counter">0 eventos registrados</span>
-          </div>
+        <div class="console-output" id="console-output">
+          <div class="log-line"><span class="log-ts">[00:00:00]</span><span class="log-level INFO">INFO</span><span class="log-msg">Sistema de Ingesta inicializado listo.</span></div>
         </div>
-
-        <div style="padding:12px 16px; color:var(--text-muted); font-size:11px; border-top:1px solid var(--border); margin-top:0;">
-          Logs en tiempo real del pipeline de ingesta distribuida · Rotación automática en 500 líneas · UTC
+        <div class="console-statusbar">
+          <div class="console-status-left">● STREAMING_IDLE</div>
+          <div class="console-status-right">UTF-8</div>
         </div>
       </div>
     </section>
+  </main>
 
-  </main><!-- /.page-wrapper -->
-
-
-  <!-- ============================================================
-       JAVASCRIPT EMBEBIDO — Toda la lógica del dashboard
-       Organizado en bloques funcionales comentados en español.
-  ============================================================ -->
   <script>
-    /* ============================================================
-       BLOQUE 1 — DATOS DE SERIES TEMPORALES SIMULADAS
-       Genera OHLCV (Open, High, Low, Close, Volume) sintético
-       para varios activos usando una caminata aleatoria (random walk).
-       En producción estos datos vendrían de las APIs reales.
-    ============================================================ */
+    // --- ESTADO GLOBAL ---
+    let tickersSeleccionados = new Set(['AAPL', 'BTC']);
+    let isIngesting = false;
+    let ingestInterval = null;
+    let selectedChartAsset = 'AAPL';
+    let totalRows = 0;
+    let totalErrors = 0;
 
-    /**
-     * Precios base de referencia para cada activo simulado.
-     * Se usan como punto de partida del random walk.
-     */
-    const PRECIO_BASE = {
-      AAPL:  185,
-      MSFT:  415,
-      BTC:   67000,
-      ETH:   3500,
-      NVDA:  875
-    };
+    // Precios y simulación base
+    const basePrices = { AAPL: 175.50, MSFT: 420.20, GOOGL: 150.10, AMZN: 178.00, NVDA: 875.00, TSLA: 170.30, BTC: 65000, ETH: 3500, SOL: 140 };
+    let chartDataStore = {};
 
-    /**
-     * Volatilidad diaria aproximada de cada activo (% como decimal).
-     * Determina qué tan amplias son las velas generadas.
-     */
-    const VOLATILIDAD = {
-      AAPL:  0.015,
-      MSFT:  0.013,
-      BTC:   0.035,
-      ETH:   0.042,
-      NVDA:  0.025
-    };
+    // --- RELOJ ---
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock-date').textContent = now.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      document.getElementById('clock-time').textContent = now.toLocaleTimeString('es-ES');
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-    /**
-     * Genera una serie OHLCV de `n` velas para el activo indicado.
-     * Usa caminata aleatoria geométrica (Geometric Brownian Motion simplificado).
-     *
-     * @param {string} ticker - Identificador del activo
-     * @param {number} n      - Número de velas a generar
-     * @returns {Object}      - { dates, opens, highs, lows, closes, volumes }
-     */
-    function generarDatosOHLCV(ticker, n = 90) {
-      const dates   = [];
-      const opens   = [];
-      const highs   = [];
-      const lows    = [];
-      const closes  = [];
-      const volumes = [];
+    // --- CONSOLA DE LOGS ---
+    function logToConsole(level, msg) {
+      const output = document.getElementById('console-output');
+      const now = new Date().toLocaleTimeString('es-ES');
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      line.innerHTML = `<span class="log-ts">[${now}]</span><span class="log-level ${level}">${level}</span><span class="log-msg">${msg}</span>`;
+      output.appendChild(line);
+      output.scrollTop = output.scrollHeight;
+    }
 
-      let precio = PRECIO_BASE[ticker] || 100;
-      const vol  = VOLATILIDAD[ticker] || 0.02;
-
-      // Fecha de inicio: n días antes de hoy
-      const ahora = new Date();
-      ahora.setHours(9, 30, 0, 0); // Apertura de mercado
-
-      for (let i = n; i >= 0; i--) {
-        // Calcular la fecha de esta vela (retrocedemos i días)
-        const fecha = new Date(ahora);
-        fecha.setDate(fecha.getDate() - i);
-
-        // Saltamos fines de semana para simular días de mercado
-        const diaSemana = fecha.getDay();
-        if (diaSemana === 0 || diaSemana === 6) continue;
-
-        // Random walk: el precio se mueve según distribución normal aproximada
-        const retorno = (Math.random() - 0.495) * vol * 2; // ligero sesgo alcista
-        const open    = precio;
-        const close   = precio * (1 + retorno);
-        const fluctH  = Math.abs(Math.random() * vol * precio);
-        const fluctL  = Math.abs(Math.random() * vol * precio);
-        const high    = Math.max(open, close) + fluctH;
-        const low     = Math.min(open, close) - fluctL;
-        const volume  = Math.floor(Math.random() * 50_000_000 + 10_000_000);
-
-        // Formatear fecha como string ISO para Plotly
-        const fechaStr = fecha.toISOString().split('T')[0];
-
-        dates.push(fechaStr);
-        opens.push(parseFloat(open.toFixed(2)));
-        highs.push(parseFloat(high.toFixed(2)));
-        lows.push(parseFloat(low.toFixed(2)));
-        closes.push(parseFloat(close.toFixed(2)));
-        volumes.push(volume);
-
-        precio = close; // El cierre es la apertura de la siguiente vela
+    // --- TICKERS / CHIPS ---
+    const select = document.getElementById('ticker-select');
+    select.addEventListener('change', (e) => {
+      const val = e.target.value;
+      if (val && !tickersSeleccionados.has(val)) {
+        tickersSeleccionados.add(val);
+        renderChips();
+        logToConsole('INFO', `Activo añadido a la cola de monitoreo: ${val}`);
       }
+      e.target.value = '';
+    });
 
-      return { dates, opens, highs, lows, closes, volumes };
-    }
-
-    /* ============================================================
-       BLOQUE 2 — ESTADO DE LA APLICACIÓN (Estado global reactivo)
-    ============================================================ */
-
-    // Activo actualmente seleccionado para el gráfico
-    let activoActual     = 'AAPL';
-
-    // Indica si la ingesta está corriendo
-    let ingestaActiva    = false;
-
-    // Tickers seleccionados por el usuario en el panel de ingesta
-    let tickersSeleccionados = ['AAPL', 'MSFT', 'BTC'];
-
-    // Contador de eventos de log
-    let contadorLogs     = 0;
-
-    // Contador de filas recibidas en la ingesta
-    let filasRecibidas   = 0;
-    let erroresIngesta   = 0;
-
-    // Almacén de datos OHLCV por activo (se genera al cargar)
-    const datosCache = {};
-    Object.keys(PRECIO_BASE).forEach(t => { datosCache[t] = generarDatosOHLCV(t); });
-
-    /* ============================================================
-       BLOQUE 3 — RELOJ EN TIEMPO REAL
-       Actualiza el reloj del encabezado cada segundo.
-    ============================================================ */
-
-    /**
-     * Formatea un número con cero a la izquierda si es menor a 10.
-     * @param {number} n
-     * @returns {string}
-     */
-    function pad2(n) { return String(n).padStart(2, '0'); }
-
-    /** Actualiza los elementos del reloj en el DOM. */
-    function actualizarReloj() {
-      const ahora = new Date();
-      const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      document.getElementById('clock-date').textContent =
-        ahora.toLocaleDateString('es-ES', opciones);
-      document.getElementById('clock-time').textContent =
-        `${pad2(ahora.getHours())}:${pad2(ahora.getMinutes())}:${pad2(ahora.getSeconds())}`;
-    }
-
-    // Inicia el reloj de inmediato y lo actualiza cada segundo
-    actualizarReloj();
-    setInterval(actualizarReloj, 1000);
-
-    /* ============================================================
-       BLOQUE 4 — GESTIÓN DE TICKERS EN EL PANEL DE INGESTA
-       Chips interactivos que permiten añadir/quitar activos.
-    ============================================================ */
-
-    /**
-     * Renderiza los chips de tickers en el DOM basándose en el array
-     * `tickersSeleccionados` del estado global.
-     */
-    function renderizarChips() {
-      const contenedor = document.getElementById('ticker-chips');
-      contenedor.innerHTML = '';
+    function renderChips() {
+      const container = document.getElementById('ticker-chips');
+      const selector = document.getElementById('chart-asset-selector');
+      container.innerHTML = '';
+      selector.innerHTML = '';
 
       tickersSeleccionados.forEach(ticker => {
         const chip = document.createElement('div');
-        chip.className = 'chip selected';
-        chip.setAttribute('role', 'listitem');
-        chip.setAttribute('aria-label', `Ticker activo: ${ticker}`);
-        chip.innerHTML = `${ticker} <span class="chip-remove" aria-hidden="true">×</span>`;
-        chip.onclick = () => eliminarTicker(ticker);
-        contenedor.appendChild(chip);
+        chip.className = 'chip';
+        chip.innerHTML = `${ticker} <span class="chip-remove">&times;</span>`;
+        chip.querySelector('.chip-remove').onclick = () => {
+          tickersSeleccionados.delete(ticker);
+          if(selectedChartAsset === ticker) {
+            selectedChartAsset = tickersSeleccionados.values().next().value || '';
+          }
+          renderChips();
+          logToConsole('WARN', `Activo removido: ${ticker}`);
+        };
+        container.appendChild(chip);
+
+        const btn = document.createElement('button');
+        btn.className = `asset-btn ${selectedChartAsset === ticker ? 'active' : ''}`;
+        btn.textContent = ticker;
+        btn.onclick = () => {
+          selectedChartAsset = ticker;
+          renderChips();
+          updateLivePriceDisplay();
+          renderChart();
+        };
+        selector.appendChild(btn);
       });
 
-      // Actualizar el contador de tickers activos en las estadísticas
-      document.getElementById('stat-tickers').textContent = tickersSeleccionados.length;
+      document.getElementById('stat-tickers').textContent = tickersSeleccionados.size;
     }
 
-    /**
-     * Añade un ticker al estado cuando el usuario lo selecciona del desplegable.
-     * Evita duplicados.
-     */
-    document.getElementById('ticker-select').addEventListener('change', function() {
-      const ticker = this.value;
-      if (!ticker) return;
-
-      if (!tickersSeleccionados.includes(ticker)) {
-        tickersSeleccionados.push(ticker);
-        renderizarChips();
-        agregarLogConsola('INFO', `Ticker ${ticker} añadido a la cola de ingesta.`);
+    // --- SIMULACIÓN Y GRÁFICO PLOTLY ---
+    function initDataStore(ticker) {
+      if (!chartDataStore[ticker]) {
+        let open = basePrices[ticker] || 100;
+        let times = [], opens = [], highs = [], lows = [], closes = [], volumes = [];
+        let now = Date.now();
+        for(let i = 20; i >= 0; i--) {
+          times.push(new Date(now - i * 60000 * 5));
+          let change = open * 0.01 * (Math.random() - 0.5);
+          let close = open + change;
+          opens.push(open);
+          closes.push(close);
+          highs.push(Math.max(open, close) + Math.random()*2);
+          lows.push(Math.min(open, close) - Math.random()*2);
+          volumes.push(Math.floor(Math.random() * 5000 + 1000));
+          open = close;
+        }
+        chartDataStore[ticker] = { times, opens, highs, lows, closes, volumes };
       }
-
-      // Resetear el selector al estado vacío
-      this.value = '';
-    });
-
-    /**
-     * Elimina un ticker del estado de selección.
-     * @param {string} ticker - El ticker a eliminar
-     */
-    function eliminarTicker(ticker) {
-      tickersSeleccionados = tickersSeleccionados.filter(t => t !== ticker);
-      renderizarChips();
-      agregarLogConsola('WARN', `Ticker ${ticker} eliminado de la cola de ingesta.`);
     }
 
-    // Renderizado inicial de chips
-    renderizarChips();
+    function generateNewCandle(ticker) {
+      initDataStore(ticker);
+      let assetData = chartDataStore[ticker];
+      let lastClose = assetData.closes[assetData.closes.length - 1];
+      let change = lastClose * 0.005 * (Math.random() - 0.48);
+      let newClose = lastClose + change;
+      
+      assetData.times.push(new Date());
+      assetData.opens.push(lastClose);
+      assetData.closes.push(newClose);
+      assetData.highs.push(Math.max(lastClose, newClose) + Math.random());
+      assetData.lows.push(Math.min(lastClose, newClose) - Math.random());
+      assetData.volumes.push(Math.floor(Math.random() * 6000 + 500));
 
-    /* ============================================================
-       BLOQUE 5 — CONTROL DE INGESTA (Botón Iniciar / Detener)
-       Gestiona el estado visual y lógico del proceso de ingesta.
-    ============================================================ */
+      if(assetData.times.length > 30) {
+        assetData.times.shift(); assetData.opens.shift(); assetData.closes.shift();
+        assetData.highs.shift(); assetData.lows.shift(); assetData.volumes.shift();
+      }
+    }
 
-    /**
-     * Alterna el estado de ingesta entre activo e inactivo.
-     * Actualiza el botón, el contador de filas y genera logs.
-     */
+    function renderChart() {
+      if (!selectedChartAsset) {
+        document.getElementById('chart-candlestick').innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-muted);">Ningún activo seleccionado</div>';
+        return;
+      }
+      initDataStore(selectedChartAsset);
+      const data = chartDataStore[selectedChartAsset];
+
+      const trace = {
+        x: data.times, open: data.opens, high: data.highs, low: data.lows, close: data.closes,
+        type: 'candlestick',
+        increasing: { line: { color: '#28A745' } },
+        decreasing: { line: { color: '#DC3545' } },
+        name: selectedChartAsset
+      };
+
+      const layout = {
+        margin: { t: 10, b: 40, l: 40, r: 10 },
+        xaxis: { rangeslider: { visible: false }, gridcolor: '#E2E8F0', type: 'date' },
+        yaxis: { gridcolor: '#E2E8F0', side: 'right' },
+        template: 'plotly_white',
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)'
+      };
+
+      Plotly.newPlot('chart-candlestick', [trace], layout, { responsive: true, displayModeBar: false });
+    }
+
+    function updateLivePriceDisplay() {
+      if(!selectedChartAsset) return;
+      initDataStore(selectedChartAsset);
+      const data = chartDataStore[selectedChartAsset];
+      const currentPrice = data.closes[data.closes.length - 1];
+      const firstPrice = data.opens[0];
+      const changePct = ((currentPrice - firstPrice) / firstPrice) * 100;
+
+      const priceEl = document.getElementById('live-price');
+      const changeEl = document.getElementById('live-change');
+
+      priceEl.textContent = `$${currentPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      changeEl.className = `price-change ${changePct >= 0 ? 'up' : 'down'}`;
+      changeEl.textContent = `${changePct >= 0 ? '▲' : '▼'} ${changePct.toFixed(2)}%`;
+    }
+
+    // --- ACCIONES PRINCIPALES ---
     function toggleIngesta() {
-      ingestaActiva = !ingestaActiva;
+      const btn = document.getElementById('btn-ingest');
+      const txt = document.getElementById('btn-ingest-text');
+      const statusIndicator = document.querySelector('.console-statusbar .console-status-left');
 
-      const btn     = document.getElementById('btn-ingest');
-      const texto   = document.getElementById('btn-ingest-text');
-      const iconPath = document.getElementById('btn-icon-path');
-
-      if (ingestaActiva) {
-        // ── Activar ingesta ──
+      if (!isIngesting) {
+        if(tickersSeleccionados.size === 0) {
+          logToConsole('ERROR', 'No se puede iniciar la ingesta sin activos en la lista.');
+          alert('Por favor selecciona al menos un activo.');
+          return;
+        }
+        isIngesting = true;
         btn.classList.add('ingesting');
-        btn.setAttribute('aria-pressed', 'true');
-        texto.textContent = '⏸ Detener Ingesta';
+        txt.textContent = "Detener Ingesta en Vivo";
+        statusIndicator.innerHTML = "● STREAMING_ACTIVE";
+        statusIndicator.style.color = "var(--success)";
+        logToConsole('SUCCESS', 'Ingesta en tiempo real iniciada con éxito mediante WebSockets.');
 
-        // Icono de stop cuadrado
-        iconPath.setAttribute('d', 'M6 6h12v12H6z');
-
-        agregarLogConsola('SUCCESS', `Ingesta iniciada para ${tickersSeleccionados.length} tickers. Intervalo: ${document.getElementById('interval-select').value}`);
-        agregarLogConsola('INFO', `Fuente activa: ${document.getElementById('source-select').options[document.getElementById('source-select').selectedIndex].text}`);
-
-        // Regenerar datos del gráfico para simular stream en vivo
-        Object.keys(PRECIO_BASE).forEach(t => { datosCache[t] = generarDatosOHLCV(t); });
-        renderizarGrafico(activoActual);
+        ingestInterval = setInterval(() => {
+          tickersSeleccionados.forEach(ticker => {
+            generateNewCandle(ticker);
+            totalRows += 1;
+            
+            if (Math.random() < 0.03) {
+              totalErrors++;
+              logToConsole('ERROR', `Fallo de red transitorio en respuesta de buffer para: ${ticker}`);
+            } else {
+              logToConsole('INFO', `Paquete de datos recibido con éxito: ${ticker} — Vela sincronizada.`);
+            }
+          });
+          document.getElementById('stat-rows').textContent = totalRows;
+          document.getElementById('stat-errors').textContent = totalErrors;
+          updateLivePriceDisplay();
+          renderChart();
+        }, 3000);
 
       } else {
-        // ── Detener ingesta ──
+        isIngesting = false;
         btn.classList.remove('ingesting');
-        btn.setAttribute('aria-pressed', 'false');
-        texto.textContent = 'Iniciar Ingesta en Tiempo Real';
-        iconPath.setAttribute('d', 'M13 2.05v2.02c3.95.49 7 3.85 7 7.93 0 3.21-1.81 6-4.72 7.72L13 17v5h5l-1.22-1.22C19.91 19.07 22 15.76 22 12c0-5.18-3.95-9.45-9-9.95M11 2.05C5.95 2.55 2 6.82 2 12c0 3.76 2.09 7.07 5.22 8.78L6 22h5V2.05z');
-
-        agregarLogConsola('WARN', 'Ingesta detenida manualmente por el operador.');
+        txt.textContent = "Iniciar Ingesta en Tiempo Real";
+        statusIndicator.innerHTML = "● STREAMING_IDLE";
+        statusIndicator.style.color = "#3FB950";
+        logToConsole('WARN', 'Ingesta de datos detenida por el operador.');
+        clearInterval(ingestInterval);
       }
     }
 
-    /* ============================================================
-       BLOQUE 6 — GRÁFICO PLOTLY: CANDLESTICK + VOLUMEN
-       Renderiza el gráfico de velas japonesas sincronizado con
-       el gráfico de volumen inferior usando Plotly.js.
-    ============================================================ */
-
-    /**
-     * Renderiza el gráfico de Plotly para el ticker indicado.
-     * Usa los datos del caché OHLCV generados previamente.
-     *
-     * @param {string} ticker - El activo a graficar
-     */
-    function renderizarGrafico(ticker) {
-      const d = datosCache[ticker];
-
-      // Precio actual (último cierre) y variación
-      const ultimoCierre  = d.closes[d.closes.length - 1];
-      const cierrePrevio  = d.closes[d.closes.length - 2] || ultimoCierre;
-      const variacion     = ((ultimoCierre - cierrePrevio) / cierrePrevio) * 100;
-
-      // Actualizar el display de precio en el encabezado del gráfico
-      const esCripto = ['BTC', 'ETH', 'SOL', 'BNB'].includes(ticker);
-      const formatoMoneda = new Intl.NumberFormat('en-US', {
-        style: 'currency', currency: 'USD',
-        minimumFractionDigits: esCripto ? 0 : 2,
-        maximumFractionDigits: esCripto ? 0 : 2
-      });
-
-      document.getElementById('price-current').textContent = formatoMoneda.format(ultimoCierre);
-      const priceChangeEl = document.getElementById('price-change');
-      const signo = variacion >= 0 ? '▲ +' : '▼ ';
-      priceChangeEl.textContent  = `${signo}${Math.abs(variacion).toFixed(2)}%`;
-      priceChangeEl.className    = `price-change ${variacion >= 0 ? 'up' : 'down'}`;
-
-      /* ── Traza 1: Candlestick (Velas Japonesas) ──
-         xaxis: eje X principal compartido con el volumen.
-         increasing/decreasing: colores corporativos verde/rojo.
-      */
-      const tracaVelas = {
-        type:        'candlestick',
-        x:           d.dates,
-        open:        d.opens,
-        high:        d.highs,
-        low:         d.lows,
-        close:       d.closes,
-        name:        ticker,
-        xaxis:       'x',
-        yaxis:       'y',
-        increasing: {
-          line:      { color: '#28A745', width: 1.5 },
-          fillcolor: '#28A74588'
-        },
-        decreasing: {
-          line:      { color: '#DC3545', width: 1.5 },
-          fillcolor: '#DC354588'
-        },
-        hovertemplate:
-          '<b>%{x}</b><br>' +
-          'Apertura: $%{open:,.2f}<br>' +
-          'Máximo:   $%{high:,.2f}<br>' +
-          'Mínimo:   $%{low:,.2f}<br>' +
-          'Cierre:   $%{close:,.2f}<extra></extra>',
-        whiskerwidth: 0.3
-      };
-
-      /* ── Traza 2: Barras de Volumen ──
-         Cada barra hereda el color de la vela correspondiente
-         (verde si cierre > apertura, rojo si cierre < apertura).
-      */
-      const coloresVolumen = d.closes.map((c, i) =>
-        c >= d.opens[i] ? 'rgba(40,167,69,0.55)' : 'rgba(220,53,69,0.55)'
-      );
-
-      const tracaVolumen = {
-        type:      'bar',
-        x:         d.dates,
-        y:         d.volumes,
-        name:      'Volumen',
-        xaxis:     'x',
-        yaxis:     'y2',
-        marker:    { color: coloresVolumen, line: { width: 0 } },
-        hovertemplate:
-          '<b>%{x}</b><br>Volumen: %{y:,.0f}<extra></extra>'
-      };
-
-      /* ── Media Móvil Simple de 20 períodos (MM20) ──
-         Traza adicional superpuesta al candlestick como referencia técnica.
-      */
-      const ventanaMM = 20;
-      const mmDates   = [];
-      const mmValues  = [];
-      for (let i = ventanaMM - 1; i < d.closes.length; i++) {
-        const suma = d.closes.slice(i - ventanaMM + 1, i + 1).reduce((a, b) => a + b, 0);
-        mmDates.push(d.dates[i]);
-        mmValues.push(parseFloat((suma / ventanaMM).toFixed(2)));
-      }
-
-      const tracaMM20 = {
-        type:      'scatter',
-        mode:      'lines',
-        x:         mmDates,
-        y:         mmValues,
-        name:      'MM 20',
-        xaxis:     'x',
-        yaxis:     'y',
-        line:      { color: 'rgba(197, 150, 26, 0.85)', width: 1.5, dash: 'dot' },
-        hovertemplate: 'MM20: $%{y:,.2f}<extra></extra>'
-      };
-
-      /* ── Layout del gráfico ──
-         Subplots: velas en la parte superior (y), volumen abajo (y2).
-         template: 'plotly_white' garantiza fondo blanco corporativo.
-         Ejes X vinculados para scroll sincronizado.
-      */
-      const layout = {
-        template:   'plotly_white',
-        title:      { text: '' }, // Título gestionado por el card-header de HTML
-        showlegend: true,
-        legend: {
-          x: 0, y: 1.0,
-          orientation: 'h',
-          font: { size: 11, color: '#1F3864' },
-          bgcolor: 'rgba(255,255,255,0.8)'
-        },
-
-        /* Ejes X: uno principal con selector de rango */
-        xaxis: {
-          type:          'date',
-          rangeslider:   { visible: false }, // Sin barra de rango para ahorrar espacio
-          showgrid:       true,
-          gridcolor:      '#E2E8F0',
-          tickfont:       { size: 10, color: '#6B7280' },
-          domain:         [0, 1],
-          anchor:         'y2', // El eje X se "ancla" al eje Y2 (volumen, abajo)
-        },
-
-        /* Eje Y principal — precio (parte superior, ~70% altura) */
-        yaxis: {
-          domain:    [0.32, 1],   // Ocupa del 32% al 100% vertical
-          tickprefix: '$',
-          showgrid:   true,
-          gridcolor:  '#E2E8F0',
-          tickfont:   { size: 10, color: '#6B7280' },
-          side:       'right',    // Precio a la derecha (convención financiera)
-          autorange:  true,
-        },
-
-        /* Eje Y2 — volumen (parte inferior, ~28% altura) */
-        yaxis2: {
-          domain:    [0, 0.28],   // Ocupa del 0% al 28% vertical
-          showgrid:   false,
-          tickfont:   { size: 9, color: '#6B7280' },
-          side:       'right',
-          title:      { text: 'Volumen', font: { size: 10, color: '#6B7280' } },
-          tickformat: '.2s'       // Formato abreviado: 1.2M, 500K, etc.
-        },
-
-        /* Margen del gráfico */
-        margin: { l: 20, r: 60, t: 20, b: 20 },
-
-        /* Fondo transparente para que se integre con el card blanco */
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor:  'rgba(0,0,0,0)',
-
-        /* Anotación de separación entre las dos secciones */
-        shapes: [{
-          type:      'line',
-          x0: 0, x1: 1,
-          y0: 0.30, y1: 0.30,
-          xref: 'paper', yref: 'paper',
-          line: { color: '#E2E8F0', width: 1 }
-        }],
-
-        /* Crosshair para comparación de datos */
-        hovermode: 'x unified',
-      };
-
-      /* ── Configuración de Plotly (botones de la toolbar) ── */
-      const config = {
-        responsive:         true,
-        displayModeBar:     true,
-        modeBarButtonsToRemove: [
-          'select2d', 'lasso2d', 'autoScale2d', 'hoverClosestCartesian',
-          'hoverCompareCartesian', 'toggleSpikelines'
-        ],
-        displaylogo:        false,
-        locale:             'es',
-        toImageButtonOptions: {
-          format:   'png',
-          filename: `investai_${ticker}_${new Date().toISOString().split('T')[0]}`,
-          height:   500,
-          width:    1200,
-          scale:    2
-        }
-      };
-
-      // Renderizar el gráfico (reemplaza cualquier gráfico previo)
-      Plotly.newPlot('chart-candlestick', [tracaVelas, tracaMM20, tracaVolumen], layout, config);
-    }
-
-    /**
-     * Cambia el activo mostrado en el gráfico.
-     * Actualiza el botón activo en la UI y regenera el gráfico.
-     *
-     * @param {string} ticker  - El nuevo activo a mostrar
-     * @param {Element} btnEl  - El botón clickado (para marcar como activo)
-     */
-    function cambiarActivo(ticker, btnEl) {
-      // Desactivar todos los botones de activo
-      document.querySelectorAll('.asset-btn').forEach(b => b.classList.remove('active'));
-
-      // Activar el botón clickado
-      if (btnEl) btnEl.classList.add('active');
-
-      activoActual = ticker;
-      renderizarGrafico(ticker);
-      agregarLogConsola('INFO', `Gráfico actualizado → ${ticker} | Cargando serie temporal completa...`);
-    }
-
-    // Renderizado inicial del gráfico con AAPL
-    renderizarGrafico('AAPL');
-
-    /* ============================================================
-       BLOQUE 7 — CONSOLA DE LOGS DEL SISTEMA
-       Simula la salida de un pipeline de ingesta en tiempo real.
-    ============================================================ */
-
-    /**
-     * Formatea un timestamp UTC para las entradas de log.
-     * @returns {string} Timestamp en formato HH:MM:SS.mmm UTC
-     */
-    function timestampLog() {
-      const ahora = new Date();
-      return `${pad2(ahora.getUTCHours())}:${pad2(ahora.getUTCMinutes())}:${pad2(ahora.getUTCSeconds())}.${String(ahora.getUTCMilliseconds()).padStart(3,'0')} UTC`;
-    }
-
-    /**
-     * Añade una nueva línea a la consola de logs.
-     * Auto-hace scroll al final y rota el buffer si supera 500 líneas.
-     *
-     * @param {string} level   - Nivel del log: INFO | SUCCESS | WARN | ERROR | DEBUG
-     * @param {string} mensaje - Texto del mensaje de log
-     */
-    function agregarLogConsola(level, mensaje) {
-      contadorLogs++;
-
-      const consola = document.getElementById('console-output');
-
-      // Crear elemento de línea
-      const linea = document.createElement('div');
-      linea.className = 'log-line';
-      linea.innerHTML = `
-        <span class="log-ts">[${timestampLog()}]</span>
-        <span class="log-level ${level}">${level}</span>
-        <span class="log-msg">${mensaje}</span>
-      `;
-
-      consola.appendChild(linea);
-
-      // Auto-scroll al final de la consola
-      consola.scrollTop = consola.scrollHeight;
-
-      // Rotación: si hay más de 500 líneas, eliminar la más antigua
-      const lineas = consola.querySelectorAll('.log-line');
-      if (lineas.length > 500) {
-        lineas[0].remove();
-      }
-
-      // Actualizar contador en la barra de estado
-      document.getElementById('console-counter').textContent =
-        `${contadorLogs.toLocaleString('es-ES')} eventos registrados`;
-    }
-
-    /** Limpia toda la consola de logs. */
-    function limpiarConsola() {
-      document.getElementById('console-output').innerHTML = '';
-      contadorLogs = 0;
-      document.getElementById('console-counter').textContent = '0 eventos registrados';
-      agregarLogConsola('DEBUG', 'Consola limpiada por el operador.');
-    }
-
-    /* ── Pool de mensajes de log simulados ──
-       Representan eventos reales de un pipeline de ingesta distribuida.
-       Se seleccionan aleatoriamente en el temporizador de simulación.
-    */
-    const POOL_LOGS = [
-      // Logs de ciclo normal de ingesta
-      ['INFO',    'Descargando datos históricos desde Yahoo Finance...'],
-      ['INFO',    'Procesando batch OHLCV — 500 registros en cola...'],
-      ['INFO',    'Sincronizando serie temporal AAPL | intervalo: 5m | filas: 288'],
-      ['INFO',    'Sincronizando serie temporal MSFT | intervalo: 5m | filas: 285'],
-      ['INFO',    'Heartbeat recibido — WebSocket bus: OK (8ms)'],
-      ['INFO',    'Normalizando timestamps a zona horaria UTC...'],
-      ['INFO',    'Calculando indicadores técnicos: RSI, MACD, Bollinger Bands...'],
-      ['INFO',    'Actualizando caché de series temporales en Redis...'],
-      ['INFO',    'Validando integridad de serie temporal BTC/USD — sin gaps detectados'],
-      ['INFO',    'Pipeline stage 2/5 completado — Transformación de datos aplicada'],
-      ['INFO',    'Enviando features procesados al módulo de predicción 6.3...'],
-      ['INFO',    'Comprobando ventana de mercado NYSE: ABIERTO'],
-      // Éxitos de conexión
-      ['SUCCESS', 'API Interactive Brokers conectada con éxito — TWS 10.19'],
-      ['SUCCESS', 'CoinMarketCap WebSocket stream activo — 847 pares'],
-      ['SUCCESS', 'Yahoo Finance scraper actualizado — 1.842 tickers cargados'],
-      ['SUCCESS', 'Módulo de validación aprobó 99.4% de las filas del batch'],
-      ['SUCCESS', 'Snapshot completo de mercado guardado en S3: s3://investai/snapshots/'],
-      ['SUCCESS', 'Modelo LSTM recibió los últimos 1.440 minutos de datos de AAPL'],
-      ['SUCCESS', 'Reconexión automática exitosa tras fallo de red transitorio'],
-      ['SUCCESS', 'ETL pipeline completado en 2.34s — 18.420 filas procesadas'],
-      // Advertencias recuperables
-      ['WARN',    'Rate limit alcanzado en CoinMarketCap — backoff exponencial activado'],
-      ['WARN',    'Gap detectado en serie NVDA: 2025-03-14 14:30 — completando con interpolación'],
-      ['WARN',    'Latencia de Interactive Brokers > 100ms — monitorizando...'],
-      ['WARN',    'Volumen anómalo en ETH/USD: +340% vs promedio 30d — flag generado'],
-      ['WARN',    'Reconectando a Yahoo Finance tras timeout (intento 2/3)...'],
-      ['WARN',    'Memoria del buffer de ingesta al 78% — forzando flush a disco'],
-      // Errores transitorios
-      ['ERROR',   'Timeout en conexión a Yahoo Finance (30s) — reintentando en 5s...'],
-      ['ERROR',   'Fallo en deserialización JSON — registro descartado (ref: BTC-20240315-092341)'],
-      ['ERROR',   'Interactive Brokers TWS: session expired — relanzando autenticación OAuth...'],
-      // Métricas de rendimiento
-      ['DEBUG',   'Throughput actual: 3.247 rows/sec | Latencia media: 42ms'],
-      ['DEBUG',   'GC pause: 12ms | Heap: 412MB / 2048MB'],
-      ['DEBUG',   'Checkpoint guardado: epoch=18472 | loss=0.00247'],
-      ['DEBUG',   'Scheduler de ingesta: próxima ejecución en 297s'],
-      ['DEBUG',   'Profiler: stage_normalize=2ms, stage_validate=8ms, stage_store=14ms'],
-    ];
-
-    /* ── Logs de inicio del sistema ──
-       Se emiten al cargar la página para simular el arranque del pipeline.
-    */
-    const LOGS_INICIO = [
-      ['INFO',    'InvestAI Pipeline v2.4.1 arrancando...'],
-      ['INFO',    'Cargando configuración desde /etc/investai/config.yaml'],
-      ['INFO',    'Conectando a brokers y fuentes de datos...'],
-      ['SUCCESS', 'API Interactive Brokers conectada con éxito.'],
-      ['SUCCESS', 'Yahoo Finance stream inicializado — 1.842 activos monitorizados.'],
-      ['SUCCESS', 'CoinMarketCap WebSocket activo — 847 pares cripto.'],
-      ['INFO',    'Módulo 6.2 listo. Esperando instrucciones del operador.'],
-    ];
-
-    // Emitir logs de inicio con pequeños delays para efecto de arranque real
-    LOGS_INICIO.forEach((entry, i) => {
-      setTimeout(() => agregarLogConsola(entry[0], entry[1]), i * 300);
-    });
-
-    /* ============================================================
-       BLOQUE 8 — TEMPORIZADORES DE SIMULACIÓN EN TIEMPO REAL
-       Actualizan el dashboard periódicamente para imitar un sistema
-       de ingesta vivo, sin depender de APIs externas.
-    ============================================================ */
-
-    /**
-     * Simula la llegada de nuevas líneas de log cada 2.5 segundos.
-     * Selecciona aleatoriamente del pool de mensajes predefinidos.
-     */
-    setInterval(() => {
-      const [nivel, msg] = POOL_LOGS[Math.floor(Math.random() * POOL_LOGS.length)];
-      agregarLogConsola(nivel, msg);
-    }, 2500);
-
-    /**
-     * Simula la actualización de métricas de las APIs cada 3 segundos.
-     * Varía ligeramente latencias y tasas de datos para imitar
-     * la variabilidad real de red.
-     */
-    setInterval(actualizarMetricasAPIs, 3000);
-
-    function actualizarMetricasAPIs() {
-      // Configuración de cada API: latencia base, variación y tasa base
-      const apis = [
-        { id: 'yahoo', latBase: 42,  latVar: 25,  rateBase: 1800,  rateVar: 400 },
-        { id: 'cmc',   latBase: 89,  latVar: 40,  rateBase: 940,   rateVar: 200 },
-        { id: 'ib',    latBase: 28,  latVar: 15,  rateBase: 3200,  rateVar: 500 },
-        { id: 'ws',    latBase: 8,   latVar: 5,   rateBase: 12000, rateVar: 1500 },
-      ];
-
-      apis.forEach(api => {
-        // Calcular latencia con jitter aleatorio
-        const lat = Math.max(2, api.latBase + Math.round((Math.random() - 0.5) * api.latVar * 2));
-
-        // Calcular tasa de datos
-        const rate = Math.max(100, api.rateBase + Math.round((Math.random() - 0.5) * api.rateVar * 2));
-
-        // Actualizar texto de latencia
-        document.getElementById(`lat-${api.id}`).textContent = lat;
-
-        // Actualizar texto de tasa
-        const rateEl = document.getElementById(`rate-${api.id}`);
-        rateEl.textContent = rate >= 1000 ? `${(rate/1000).toFixed(1)}k` : rate;
-
-        // Actualizar barra visual de latencia
-        // Se normaliza 0–300ms → 0–100% con color dinámico
-        const pct = Math.min(100, (lat / 300) * 100);
-        const barColor = lat < 80 ? 'var(--success)' : lat < 180 ? 'var(--warning)' : 'var(--danger)';
-        const barEl = document.getElementById(`lat-bar-${api.id}`);
-        barEl.style.width  = `${pct}%`;
-        barEl.style.background = barColor;
-
-        // Simular errores esporádicos (probabilidad ~4%)
-        const dotEl    = document.getElementById(`dot-${api.id}`);
-        const widgetEl = document.getElementById(`api-${api.id}`);
-        if (Math.random() < 0.04) {
-          dotEl.className    = 'status-dot error';
-          widgetEl.classList.add('error');
-          agregarLogConsola('ERROR', `API ${api.id.toUpperCase()} — Timeout de conexión. Reconectando...`);
-          // Recuperar automáticamente en 2 segundos
-          setTimeout(() => {
-            dotEl.className    = 'status-dot connected';
-            widgetEl.classList.remove('error');
-            agregarLogConsola('SUCCESS', `API ${api.id.toUpperCase()} — Reconectada exitosamente.`);
-          }, 2000);
-        }
-      });
-    }
-
-    /**
-     * Actualiza el contador de filas recibidas si la ingesta está activa.
-     * Simula un throughput de ~500–2500 filas/segundo.
-     */
-    setInterval(() => {
-      if (!ingestaActiva) return;
-      const nuevasFilas = Math.round(Math.random() * 2000 + 500) * tickersSeleccionados.length;
-      filasRecibidas += nuevasFilas;
-
-      // Actualizar estadísticas del panel de ingesta
-      document.getElementById('stat-rows').textContent =
-        filasRecibidas > 1000
-          ? `${(filasRecibidas / 1000).toFixed(1)}K`
-          : filasRecibidas;
-
-      // Simular errores aleatorios esporádicos (probabilidad ~2%)
-      if (Math.random() < 0.02) {
-        erroresIngesta++;
-        document.getElementById('stat-errors').textContent = erroresIngesta;
-      }
-    }, 1500);
-
-    /**
-     * Actualiza el gráfico de Plotly con una nueva vela cada 8 segundos
-     * si la ingesta está activa, simulando la llegada de datos en tiempo real.
-     */
-    setInterval(() => {
-      if (!ingestaActiva) return;
-
-      const d = datosCache[activoActual];
-
-      // Calcular nueva vela extendiendo la última
-      const ultimoCierre = d.closes[d.closes.length - 1];
-      const vol  = VOLATILIDAD[activoActual] || 0.02;
-      const ret  = (Math.random() - 0.495) * vol * 2;
-      const nuevoClose = ultimoCierre * (1 + ret);
-      const nuevoOpen  = ultimoCierre;
-      const fluctH = Math.abs(Math.random() * vol * ultimoCierre);
-      const fluctL = Math.abs(Math.random() * vol * ultimoCierre);
-      const nuevoHigh  = Math.max(nuevoOpen, nuevoClose) + fluctH;
-      const nuevoLow   = Math.min(nuevoOpen, nuevoClose) - fluctL;
-      const nuevoVol   = Math.floor(Math.random() * 50_000_000 + 10_000_000);
-
-      // Añadir la nueva vela al caché de datos
-      const ultimaFecha = new Date(d.dates[d.dates.length - 1]);
-      ultimaFecha.setDate(ultimaFecha.getDate() + 1);
-      // Saltar fines de semana
-      while ([0, 6].includes(ultimaFecha.getDay())) {
-        ultimaFecha.setDate(ultimaFecha.getDate() + 1);
-      }
-
-      d.dates.push(ultimaFecha.toISOString().split('T')[0]);
-      d.opens.push(parseFloat(nuevoOpen.toFixed(2)));
-      d.highs.push(parseFloat(nuevoHigh.toFixed(2)));
-      d.lows.push(parseFloat(nuevoLow.toFixed(2)));
-      d.closes.push(parseFloat(nuevoClose.toFixed(2)));
-      d.volumes.push(nuevoVol);
-
-      // Usar Plotly.extendTraces para actualizar de forma eficiente
-      // (sin re-renderizar todo el gráfico)
-      Plotly.extendTraces('chart-candlestick', {
-        x:     [[d.dates[d.dates.length - 1]], [d.dates[d.dates.length - 1]], [d.dates[d.dates.length - 1]]],
-        open:  [[d.opens[d.opens.length - 1]]],
-        high:  [[d.highs[d.highs.length - 1]]],
-        low:   [[d.lows[d.lows.length - 1]]],
-        close: [[d.closes[d.closes.length - 1]]],
-        y:     [[], [], [nuevoVol]]
-      }, [0, 1, 2]);
-
-      // Actualizar precio mostrado
-      const variacion = ((nuevoClose - ultimoCierre) / ultimoCierre) * 100;
-      const esCripto  = ['BTC', 'ETH', 'SOL', 'BNB'].includes(activoActual);
-      const fmt = new Intl.NumberFormat('en-US', {
-        style: 'currency', currency: 'USD',
-        minimumFractionDigits: esCripto ? 0 : 2,
-        maximumFractionDigits: esCripto ? 0 : 2
-      });
-      document.getElementById('price-current').textContent = fmt.format(nuevoClose);
-      const priceChangeEl = document.getElementById('price-change');
-      priceChangeEl.textContent = `${variacion >= 0 ? '▲ +' : '▼ '}${Math.abs(variacion).toFixed(2)}%`;
-      priceChangeEl.className   = `price-change ${variacion >= 0 ? 'up' : 'down'}`;
-
-    }, 8000);
-
-    /* ============================================================
-       BLOQUE 9 — BOTÓN "FORZAR SINCRONIZACIÓN"
-       Simula una sincronización forzada de todas las APIs.
-    ============================================================ */
-
-    /**
-     * Fuerza la sincronización de todas las APIs proveedoras.
-     * Muestra un estado de "sincronizando" en los dots y emite logs.
-     */
     function forceSyncAll() {
-      const apiIds = ['yahoo', 'cmc', 'ib', 'ws'];
-
-      agregarLogConsola('WARN', 'Sincronización forzada iniciada por el operador.');
-
-      // Poner todos los dots en estado "sincronizando" (amarillo parpadeante)
-      apiIds.forEach(id => {
-        document.getElementById(`dot-${id}`).className = 'status-dot syncing';
-      });
-
-      // Simular la sincronización secuencial con delays
-      apiIds.forEach((id, i) => {
-        setTimeout(() => {
-          document.getElementById(`dot-${id}`).className = 'status-dot connected';
-          const nombres = {
-            yahoo: 'Yahoo Finance',
-            cmc:   'CoinMarketCap',
-            ib:    'Interactive Brokers',
-            ws:    'WebSocket Interno'
-          };
-          agregarLogConsola('SUCCESS', `${nombres[id]} sincronizado correctamente — datos frescos disponibles.`);
-        }, (i + 1) * 800); // Delay escalonado de 800ms por API
-      });
-
-      // Al finalizar, regenerar el gráfico con datos frescos
+      logToConsole('INFO', 'Forzando sincronización completa con los servidores remotos...');
       setTimeout(() => {
-        Object.keys(PRECIO_BASE).forEach(t => { datosCache[t] = generarDatosOHLCV(t); });
-        renderizarGrafico(activoActual);
-        agregarLogConsola('INFO', 'Gráfico actualizado con datos frescos post-sincronización.');
-      }, (apiIds.length + 1) * 800);
+        logToConsole('SUCCESS', 'APIs Yahoo Finance y CoinMarketCap re-calibradas.');
+      }, 800);
     }
 
+    // Carga inicial
+    window.onload = () => {
+      renderChips();
+      updateLivePriceDisplay();
+      renderChart();
+    };
   </script>
 </body>
 </html>
