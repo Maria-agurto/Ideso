@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio Manager — Sistema de Inversión Inteligente</title>
+
+  <!-- Chart.js via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+  <style>
+    /* ─── Variables de diseño ─── */
+    :root {
+      --bg:        #0b0f1a;
+      --surface:   #111827;
+      --border:    #1e2d45;
+      --accent:    #3b82f6;
+      --accent2:   #10b981;
+      --warn:      #f59e0b;
+      --danger:    #ef4444;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --hold:      #94a3b8;
+
+      /* Colores por activo */
+      --aapl:  #3b82f6;
+      --msft:  #10b981;
+      --googl: #f59e0b;
+      --btc:   #f97316;
+
+      --radius: 12px;
+      --gap: 20px;
+    }
+
+    /* ─── Reset ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 0 0 48px;
+    }
+
+    /* ─── Header ─── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .logo-text { font-size: 15px; font-weight: 700; letter-spacing: 0.04em; color: var(--text); }
+    .logo-sub  { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+
+    .header-right { display: flex; align-items: center; gap: 16px; }
+    .capital-badge {
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 13px;
+      color: var(--accent);
+    }
+    .capital-badge span { font-weight: 700; }
+
+    /* ─── Layout principal ─── */
+    main { padding: 28px 32px; }
+
+    /* Panel de métricas en fila */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--gap);
+      margin-bottom: var(--gap);
+    }
+
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .metric-card.positive::before { background: var(--accent2); }
+    .metric-card.blue::before     { background: var(--accent); }
+    .metric-card.warn::before     { background: var(--warn); }
+    .metric-card.danger::before   { background: var(--danger); }
+
+    .metric-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .metric-value {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .metric-value.positive { color: var(--accent2); }
+    .metric-value.blue     { color: var(--accent); }
+    .metric-value.warn     { color: var(--warn); }
+    .metric-value.danger   { color: var(--danger); }
+
+    .metric-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ─── Fila media: dona + tabla ─── */
+    .mid-row {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: var(--gap);
+      margin-bottom: var(--gap);
+    }
+
+    /* Tarjeta base */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .card-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    /* ─── Dona ─── */
+    .donut-wrap {
+      position: relative;
+      width: 200px; height: 200px;
+      margin: 0 auto 24px;
+    }
+    .donut-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .donut-center .dc-val  { font-size: 20px; font-weight: 800; }
+    .donut-center .dc-lbl  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .legend {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+    .legend-left { display: flex; align-items: center; gap: 8px; }
+    .legend-dot  { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .legend-pct  { font-weight: 700; color: var(--text); }
+    .legend-val  { color: var(--muted); font-size: 12px; }
+
+    /* ─── Tabla ─── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { border-bottom: 1px solid var(--border); }
+    th {
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 0 12px 12px;
+      font-weight: 600;
+    }
+    td {
+      padding: 14px 12px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(30,45,69,0.5);
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: rgba(59,130,246,0.04); }
+
+    .ticker-badge {
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+    }
+    .ticker-badge.aapl  { color: var(--aapl); }
+    .ticker-badge.msft  { color: var(--msft); }
+    .ticker-badge.googl { color: var(--googl); }
+    .ticker-badge.btc   { color: var(--btc); }
+
+    .pnl-pos { color: var(--accent2); font-weight: 700; }
+    .pnl-neg { color: var(--danger);  font-weight: 700; }
+
+    .signal {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+    }
+    .signal-buy  { background: rgba(16,185,129,0.15); color: var(--accent2); border: 1px solid rgba(16,185,129,0.3); }
+    .signal-sell { background: rgba(239,68,68,0.15);  color: var(--danger);  border: 1px solid rgba(239,68,68,0.3); }
+    .signal-hold { background: rgba(148,163,184,0.1); color: var(--hold);    border: 1px solid rgba(148,163,184,0.2); }
+
+    /* ─── Equity chart ─── */
+    .equity-card { margin-bottom: var(--gap); }
+    .equity-legend {
+      display: flex; gap: 24px;
+      margin-bottom: 16px;
+    }
+    .eq-leg-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+    .eq-leg-line {
+      width: 28px; height: 3px; border-radius: 2px;
+    }
+
+    /* ─── Botón rebalancear ─── */
+    .actions-row {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .btn-rebalance {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 28px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(59,130,246,0.3);
+      transition: transform 0.15s, box-shadow 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-rebalance:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(59,130,246,0.45);
+    }
+    .btn-rebalance:active { transform: translateY(0); }
+
+    /* ─── Modal ─── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      width: 440px;
+      max-width: 95vw;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      animation: slideUp 0.2s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(16px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .modal-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .modal-alloc {
+      background: rgba(59,130,246,0.06);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .modal-alloc-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .modal-alloc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      font-size: 13px;
+    }
+    .modal-alloc-row:not(:last-child) { border-bottom: 1px solid rgba(30,45,69,0.8); }
+    .alloc-bar-wrap { flex: 1; margin: 0 12px; background: var(--border); border-radius: 4px; height: 4px; }
+    .alloc-bar      { height: 4px; border-radius: 4px; }
+
+    .modal-warn {
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--warn);
+      margin-bottom: 24px;
+    }
+
+    .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
+
+    .btn-cancel {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .btn-cancel:hover { border-color: var(--muted); color: var(--text); }
+
+    .btn-confirm {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-confirm:hover { opacity: 0.9; }
+
+    /* ─── Toast ─── */
+    .toast {
+      position: fixed;
+      bottom: 32px; right: 32px;
+      background: var(--accent2);
+      color: #fff;
+      border-radius: 10px;
+      padding: 14px 22px;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(16,185,129,0.4);
+      z-index: 200;
+      display: none;
+      animation: fadeInUp 0.3s ease;
+    }
+    @keyframes fadeInUp {
+      from { transform: translateY(12px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 900px) {
+      main { padding: 16px; }
+      .metrics-row { grid-template-columns: repeat(2, 1fr); }
+      .mid-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 520px) {
+      .metrics-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── Encabezado ─── -->
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <div>
+      <div class="logo-text">SmartInvest AI</div>
+      <div class="logo-sub">Módulo de Gestión de Portafolio</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="capital-badge">Capital: <span>$112,843.20</span></div>
+  </div>
+</header>
+
+<!-- ─── Contenido principal ─── -->
+<main>
+
+  <!-- 1. Panel de métricas (4 KPIs) -->
+  <section class="metrics-row">
+    <div class="metric-card positive">
+      <div class="metric-label">Total Return</div>
+      <div class="metric-value positive">+12.84%</div>
+      <div class="metric-sub">+$12,843.20 desde inicio</div>
+    </div>
+    <div class="metric-card blue">
+      <div class="metric-label">Sharpe Ratio</div>
+      <div class="metric-value blue">1.74</div>
+      <div class="metric-sub">Riesgo ajustado (rf 5%)</div>
+    </div>
+    <div class="metric-card danger">
+      <div class="metric-label">Max Drawdown</div>
+      <div class="metric-value danger">−8.31%</div>
+      <div class="metric-sub">Caída máxima del portafolio</div>
+    </div>
+    <div class="metric-card warn">
+      <div class="metric-label">Win Rate</div>
+      <div class="metric-value warn">63.4%</div>
+      <div class="metric-sub">Profit Factor: 1.89 · 134 trades</div>
+    </div>
+  </section>
+
+  <!-- 2. Dona (distribución) + Tabla de posiciones -->
+  <section class="mid-row">
+
+    <!-- Gráfico de dona -->
+    <div class="card">
+      <div class="card-title">Distribución del Portafolio</div>
+      <div class="donut-wrap">
+        <canvas id="donutChart"></canvas>
+        <div class="donut-center">
+          <div class="dc-val">4</div>
+          <div class="dc-lbl">activos</div>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-left">
+            <div class="legend-dot" style="background:var(--aapl)"></div>
+            <span>AAPL</span>
+          </div>
+          <div>
+            <span class="legend-pct">40%</span>
+            <span class="legend-val"> — $45,137.28</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-left">
+            <div class="legend-dot" style="background:var(--msft)"></div>
+            <span>MSFT</span>
+          </div>
+          <div>
+            <span class="legend-pct">25%</span>
+            <span class="legend-val"> — $28,210.80</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-left">
+            <div class="legend-dot" style="background:var(--googl)"></div>
+            <span>GOOGL</span>
+          </div>
+          <div>
+            <span class="legend-pct">20%</span>
+            <span class="legend-val"> — $22,568.64</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-left">
+            <div class="legend-dot" style="background:var(--btc)"></div>
+            <span>BTC-USD</span>
+          </div>
+          <div>
+            <span class="legend-pct">15%</span>
+            <span class="legend-val"> — $16,926.48</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de posiciones -->
+    <div class="card">
+      <div class="card-title">Posiciones Abiertas</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Cantidad</th>
+              <th>P. Compra</th>
+              <th>P. Actual</th>
+              <th>P&amp;L ($)</th>
+              <th>P&amp;L (%)</th>
+              <th>Señal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="ticker-badge aapl">AAPL</span></td>
+              <td>202</td>
+              <td>$188.45</td>
+              <td>$223.53</td>
+              <td class="pnl-pos">+$7,086.16</td>
+              <td class="pnl-pos">+18.61%</td>
+              <td><span class="signal signal-hold">HOLD</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker-badge msft">MSFT</span></td>
+              <td>66</td>
+              <td>$374.20</td>
+              <td>$427.44</td>
+              <td class="pnl-pos">+$3,513.84</td>
+              <td class="pnl-pos">+14.23%</td>
+              <td><span class="signal signal-buy">BUY</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker-badge googl">GOOGL</span></td>
+              <td>128</td>
+              <td>$156.80</td>
+              <td>$176.32</td>
+              <td class="pnl-pos">+$2,498.56</td>
+              <td class="pnl-pos">+12.45%</td>
+              <td><span class="signal signal-buy">BUY</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker-badge btc">BTC-USD</span></td>
+              <td>0.198</td>
+              <td>$68,420.00</td>
+              <td>$85,487.00</td>
+              <td class="pnl-pos">+$3,379.27</td>
+              <td class="pnl-pos">+24.94%</td>
+              <td><span class="signal signal-sell">SELL</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Curva de equity -->
+  <section class="card equity-card">
+    <div class="card-title">Curva de Equity — Estrategia vs Buy &amp; Hold</div>
+    <div class="equity-legend">
+      <div class="eq-leg-item">
+        <div class="eq-leg-line" style="background:var(--accent)"></div>
+        Estrategia Activa (+12.84%)
+      </div>
+      <div class="eq-leg-item">
+        <div class="eq-leg-line" style="background:#475569"></div>
+        Buy &amp; Hold (+8.37%)
+      </div>
+    </div>
+    <canvas id="equityChart" style="height:240px"></canvas>
+  </section>
+
+  <!-- 4. Botón rebalancear -->
+  <div class="actions-row">
+    <button class="btn-rebalance" onclick="openModal()">
+      <!-- Ícono SVG inline de balanza -->
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+      </svg>
+      Rebalancear Portafolio
+    </button>
+  </div>
+
+</main>
+
+<!-- 5. Modal de confirmación de rebalanceo -->
+<div class="modal-overlay" id="rebalanceModal">
+  <div class="modal">
+    <div class="modal-title">Confirmar Rebalanceo</div>
+    <div class="modal-sub">Se ejecutarán órdenes para restablecer los pesos objetivo del portafolio. Comisión estimada: 0.1% por operación.</div>
+
+    <div class="modal-alloc">
+      <div class="modal-alloc-title">Asignación Objetivo</div>
+      <div class="modal-alloc-row">
+        <span style="color:var(--aapl); font-weight:700; width:70px">AAPL</span>
+        <div class="alloc-bar-wrap"><div class="alloc-bar" style="width:40%; background:var(--aapl)"></div></div>
+        <span>40%</span>
+      </div>
+      <div class="modal-alloc-row">
+        <span style="color:var(--msft); font-weight:700; width:70px">MSFT</span>
+        <div class="alloc-bar-wrap"><div class="alloc-bar" style="width:25%; background:var(--msft)"></div></div>
+        <span>25%</span>
+      </div>
+      <div class="modal-alloc-row">
+        <span style="color:var(--googl); font-weight:700; width:70px">GOOGL</span>
+        <div class="alloc-bar-wrap"><div class="alloc-bar" style="width:20%; background:var(--googl)"></div></div>
+        <span>20%</span>
+      </div>
+      <div class="modal-alloc-row">
+        <span style="color:var(--btc); font-weight:700; width:70px">BTC-USD</span>
+        <div class="alloc-bar-wrap"><div class="alloc-bar" style="width:15%; background:var(--btc)"></div></div>
+        <span>15%</span>
+      </div>
+    </div>
+
+    <div class="modal-warn">
+      ⚠ Costo estimado de comisiones: ~$113.00 USD. Esta acción no se puede deshacer automáticamente.
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-confirm" onclick="confirmRebalance()">Confirmar Rebalanceo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast de confirmación -->
+<div class="toast" id="toast">✓ Portafolio rebalanceado exitosamente</div>
+
+<script>
+  /* ──────────────────────────────────────────
+     Datos simulados del portafolio
+     Capital inicial: $100,000 USD
+     Comisión: 0.1% por operación
+  ────────────────────────────────────────── */
+
+  // ─── 1. Gráfico de dona: distribución por activo ───
+  const donutCtx = document.getElementById('donutChart').getContext('2d');
+  new Chart(donutCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['AAPL', 'MSFT', 'GOOGL', 'BTC-USD'],
+      datasets: [{
+        data: [40, 25, 20, 15],
+        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#f97316'],
+        borderColor: '#111827',
+        borderWidth: 3,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      cutout: '68%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.label}: ${ctx.parsed}%`
+          },
+          backgroundColor: '#1e293b',
+          borderColor: '#334155',
+          borderWidth: 1,
+          titleColor: '#e2e8f0',
+          bodyColor: '#94a3b8',
+          padding: 10
+        }
+      },
+      animation: { animateRotate: true, duration: 800 }
+    }
+  });
+
+  // ─── 2. Curva de equity: estrategia activa vs buy & hold ───
+  // Datos mensuales simulados (12 meses de backtesting con VectorBT)
+  const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+  // Estrategia activa: sube con volatilidad controlada, evita drawdowns grandes
+  const estrategia = [100000, 101850, 103200, 101400, 104700, 106300, 104800, 108200, 107100, 109800, 111200, 112843];
+
+  // Buy & Hold: tendencia similar pero sin gestión de riesgo activa
+  const buyHold = [100000, 101200, 102800, 99600, 103100, 105400, 103200, 106500, 105100, 107300, 108100, 108370];
+
+  const equityCtx = document.getElementById('equityChart').getContext('2d');
+
+  // Gradiente para la línea azul (estrategia)
+  const gradBlue = equityCtx.createLinearGradient(0, 0, 0, 280);
+  gradBlue.addColorStop(0, 'rgba(59,130,246,0.25)');
+  gradBlue.addColorStop(1, 'rgba(59,130,246,0)');
+
+  // Gradiente para buy & hold (gris)
+  const gradGray = equityCtx.createLinearGradient(0, 0, 0, 280);
+  gradGray.addColorStop(0, 'rgba(71,85,105,0.15)');
+  gradGray.addColorStop(1, 'rgba(71,85,105,0)');
+
+  new Chart(equityCtx, {
+    type: 'line',
+    data: {
+      labels: meses,
+      datasets: [
+        {
+          label: 'Estrategia Activa',
+          data: estrategia,
+          borderColor: '#3b82f6',
+          backgroundColor: gradBlue,
+          borderWidth: 2.5,
+          pointRadius: 4,
+          pointBackgroundColor: '#3b82f6',
+          pointBorderColor: '#111827',
+          pointBorderWidth: 2,
+          fill: true,
+          tension: 0.4
+        },
+        {
+          label: 'Buy & Hold',
+          data: buyHold,
+          borderColor: '#475569',
+          backgroundColor: gradGray,
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#475569',
+          pointBorderColor: '#111827',
+          pointBorderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          borderDash: [5, 4]
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e293b',
+          borderColor: '#334155',
+          borderWidth: 1,
+          titleColor: '#94a3b8',
+          bodyColor: '#e2e8f0',
+          padding: 12,
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString('en-US')}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#1e2d45', drawBorder: false },
+          ticks: { color: '#64748b', font: { size: 11 } }
+        },
+        y: {
+          grid: { color: '#1e2d45', drawBorder: false },
+          ticks: {
+            color: '#64748b',
+            font: { size: 11 },
+            callback: val => `$${(val / 1000).toFixed(0)}K`
+          },
+          min: 98000,
+          max: 115000
+        }
+      },
+      animation: { duration: 1000, easing: 'easeInOutQuart' }
+    }
+  });
+
+  // ─── 3. Lógica del modal de rebalanceo ───
+  function openModal() {
+    document.getElementById('rebalanceModal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('rebalanceModal').classList.remove('open');
+  }
+
+  // Cerrar modal al hacer clic fuera del recuadro
+  document.getElementById('rebalanceModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // Confirmar rebalanceo: cerrar modal y mostrar toast
+  function confirmRebalance() {
+    closeModal();
+    const toast = document.getElementById('toast');
+    toast.style.display = 'block';
+    // Ocultar el toast después de 3 segundos
+    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+  }
+
+  // Tecla Escape para cerrar modal
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+</script>
+</body>
+</html>
