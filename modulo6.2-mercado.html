@@ -32,6 +32,30 @@
     .dot-live { width: 8px; height: 8px; border-radius: 50%; background: #28a745; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
     .nav-status span { color: #aaa; font-size: 12px; }
+    /* ESTILOS AGREGADOS PARA EL MENÚ DE MÓDULOS */
+    .nav-links {
+      display: flex;
+      gap: 16px;
+      margin-left: auto;
+      margin-right: 24px;
+    }
+    .nav-link-btn {
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 4px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .nav-link-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #C5961A;
+    }
+    .nav-link-btn.active {
+      background: #C5961A;
+      color: #1F3864;
+    }
 
     /* CONTROLS BAR */
     .controls-bar {
@@ -174,6 +198,15 @@
       <div class="nav-module">Módulo 6.2 — Datos de Mercado</div>
     </div>
   </div>
+
+  <div class="nav-links">
+    <a href="modulo6.2-mercado.html" class="nav-link-btn active">Mercado (6.2)</a>
+    <a href="modulo6.4-nlp-operaciones.html" class="nav-link-btn">NLP Operaciones (6.4)</a>
+    <a href="modulo6,5-6.8.html" class="nav-link-btn">Modelos (6.5-6.8)</a>
+    <a href="modulo6.6-6.7.html" class="nav-link-btn">Métricas (6.6-6.7)</a>
+    <a href="modulo6.9-6.10-6.11.html" class="nav-link-btn">Finanzas (6.9-6.11)</a>
+  </div>
+
   <div class="nav-status">
     <div class="dot-live"></div>
     <span>MERCADO EN VIVO</span>
