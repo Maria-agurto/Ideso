@@ -44,7 +44,7 @@
     }
 
     /* ============================================================
-       BARRA DE NAVEGACIÓN SUPERIOR FIXED (NAVBAR CORREGIDA)
+       BARRA DE NAVEGACIÓN SUPERIOR UNIFICADA (CORREGIDA)
     ============================================================ */
     .navbar {
       position: fixed;
@@ -68,6 +68,7 @@
       letter-spacing: 0.5px;
       flex-shrink: 0;
       margin-right: 28px;
+      text-decoration: none;
     }
 
     .navbar-brand svg { width: 28px; height: 28px; }
@@ -478,26 +479,24 @@
 <body>
 
   <nav class="navbar" role="navigation" aria-label="Navegación principal InvestAI">
-    <div class="navbar-brand">
+    <a href="index.html" class="navbar-brand">
       <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect width="32" height="32" rx="6" fill="#C5961A" opacity="0.15"/>
         <polyline points="4,24 10,14 16,18 22,8 28,12" stroke="#C5961A" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
         <circle cx="22" cy="8" r="2.5" fill="#C5961A"/>
       </svg>
       InvestAI
-    </div>
+    </a>
     <div class="navbar-tabs" role="tablist">
-      <a href="modulo6.1-autenticacion.html" class="nav-tab" role="tab" aria-selected="false">1. Autenticación (M1)</a>
-      <a href="modulo6.2-mercado.html" class="nav-tab active" role="tab" aria-selected="true">2. Ingesta de Datos (M2)</a>
-      <a href="Prediccion con SVM/" class="nav-tab" role="tab" aria-selected="false">3. Clasificación (M3)</a>
-      <a href="Pronostico con LSTM/" class="nav-tab" role="tab" aria-selected="false">4. Regresión (M4)</a>
-      <a href="modulo6.5-nlp-operaciones.html" class="nav-tab" role="tab" aria-selected="false">5. Análisis NLP (M5)</a>
-      <a href="modulo6.6-core-predictivo-central.html" class="nav-tab" role="tab" aria-selected="false">6. Core Predictivo (M6)</a>
-      <a href="modulo6.7-estrategias.html" class="nav-tab" role="tab" aria-selected="false">7. Estrategias (M7)</a>
-      <a href="modulo6.8-ordenes.html" class="nav-tab" role="tab" aria-selected="false">8. Órdenes (M8)</a>
-      <a href="modulo6.9-portafolio.html" class="nav-tab" role="tab" aria-selected="false">9. Portafolios (M9)</a>
-      <a href="modulo6.10-consola.html" class="nav-tab" role="tab" aria-selected="false">10. Consola (M10)</a>
-      <a href="modulo6.11-backtesting.html" class="nav-tab" role="tab" aria-selected="false">11. Backtesting (M11)</a>
+      <a href="modulo6.1-autenticacion.html" class="nav-tab" role="tab" aria-selected="false">Autenticación (M1)</a>
+      <a href="modulo6.2-mercado.html" class="nav-tab active" role="tab" aria-selected="true">Ingesta de Datos (M2)</a>
+      <a href="modulo6.5-nlp-operaciones.html" class="nav-tab" role="tab" aria-selected="false">Análisis NLP (M5)</a>
+      <a href="modulo6.6-core-predictivo-central.html" class="nav-tab" role="tab" aria-selected="false">Core Predictivo (M6)</a>
+      <a href="modulo6.7-estrategias.html" class="nav-tab" role="tab" aria-selected="false">Estrategias (M7)</a>
+      <a href="modulo6.8-ordenes.html" class="nav-tab" role="tab" aria-selected="false">Órdenes (M8)</a>
+      <a href="modulo6.9-portafolio.html" class="nav-tab" role="tab" aria-selected="false">Portafolios (M9)</a>
+      <a href="modulo6.10-consola.html" class="nav-tab" role="tab" aria-selected="false">Consola (M10)</a>
+      <a href="modulo6.11-backtesting.html" class="nav-tab" role="tab" aria-selected="false">Backtesting (M11)</a>
     </div>
     <div class="live-badge" aria-live="polite"><div class="live-dot"></div>EN VIVO</div>
   </nav>
@@ -832,28 +831,26 @@
 
       } else {
         isIngesting = false;
-        logToConsole('WARN', 'Ingesta de datos detenida por el operador.');
-        clearInterval(ingestInterval);
         btn.classList.remove('ingesting');
         txt.textContent = "Iniciar Ingesta en Tiempo Real";
         statusIndicator.innerHTML = "● STREAMING_IDLE";
-        statusIndicator.style.color = "#3FB950";
+        statusIndicator.style.color = "var(--text-muted)";
+        logToConsole('WARN', 'Ingesta de datos pausada por el usuario.');
+        clearInterval(ingestInterval);
       }
     }
 
     function forceSyncAll() {
-      logToConsole('INFO', 'Forzando sincronización completa con los servidores remotos...');
+      logToConsole('INFO', 'Forzando sincronización completa con los servidores de API...');
       setTimeout(() => {
-        logToConsole('SUCCESS', 'APIs Yahoo Finance y CoinMarketCap re-calibradas.');
+        logToConsole('SUCCESS', 'Sincronización manual completada. Buffers limpios.');
       }, 800);
     }
 
-    // --- CARGA INICIAL POR VENTANA ---
-    window.onload = () => {
-      renderChips();
-      updateLivePriceDisplay();
-      renderChart();
-    };
+    // Inicialización por defecto
+    renderChips();
+    updateLivePriceDisplay();
+    renderChart();
   </script>
 </body>
 </html>
