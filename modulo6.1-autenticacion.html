@@ -579,16 +579,11 @@
 </head>
 <body>
 
-  <!-- ============================================================
-       PANTALLA 1: INICIO DE SESIÓN
-       ============================================================ -->
   <div class="screen active" id="screen-login">
     <div class="card">
 
-      <!-- Marca corporativa -->
       <div class="brand">
         <div class="brand-icon">
-          <!-- Ícono: gráfico de velas financieras en SVG -->
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="3"  y="9"  width="3" height="7" rx="0.5" fill="#C5961A"/>
             <line x1="4.5" y1="6"  x2="4.5" y2="9"  stroke="#C5961A" stroke-width="1.5"/>
@@ -611,12 +606,10 @@
       <h2 class="section-title">Iniciar sesión</h2>
       <p class="section-subtitle">Accede a tu cuenta para gestionar tus inversiones.</p>
 
-      <!-- Campo: Correo electrónico -->
       <div class="field" id="field-login-email">
         <label for="login-email">Correo electrónico</label>
         <div class="input-wrap">
           <span class="field-icon">
-            <!-- Icono sobre -->
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
             </svg>
@@ -629,13 +622,11 @@
           />
         </div>
         <span class="field-error" id="err-login-email">
-          <!-- Icono de alerta -->
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span id="err-login-email-txt">Ingresa un correo válido.</span>
         </span>
       </div>
 
-      <!-- Campo: Contraseña -->
       <div class="field" id="field-login-pass">
         <div class="link-row">
           <label for="login-pass">Contraseña</label>
@@ -653,7 +644,6 @@
             placeholder="••••••••"
             autocomplete="current-password"
           />
-          <!-- Botón para mostrar/ocultar contraseña -->
           <button class="toggle-pass" type="button" onclick="togglePass('login-pass', this)" aria-label="Mostrar contraseña">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye">
               <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
@@ -666,15 +656,11 @@
         </span>
       </div>
 
-      <!-- Botón principal -->
       <button class="btn-primary" onclick="validateLogin()">Ingresar a mi cuenta</button>
 
-      <!-- Separador -->
       <div class="divider">o</div>
 
-      <!-- Botón Google -->
       <button class="btn-google" onclick="alert('Autenticación con Google no configurada en este entorno.')">
-        <!-- Logo Google SVG inline -->
         <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
           <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
           <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
@@ -684,20 +670,13 @@
         Continuar con Google
       </button>
 
-      <!-- Enlace a registro -->
       <p class="footer-text">
         ¿No tienes cuenta?
         <button class="link" onclick="showScreen('screen-register')">Crear cuenta nueva</button>
       </p>
 
     </div>
-  </div><!-- /screen-login -->
-
-
-  <!-- ============================================================
-       PANTALLA 2: REGISTRO DE CUENTA
-       ============================================================ -->
-  <div class="screen" id="screen-register">
+  </div><div class="screen" id="screen-register">
     <div class="card">
 
       <div class="brand">
@@ -724,7 +703,6 @@
       <h2 class="section-title">Crear cuenta</h2>
       <p class="section-subtitle">Completa tu perfil de inversor para acceder al sistema.</p>
 
-      <!-- Campo: Nombre completo -->
       <div class="field" id="field-reg-name">
         <label for="reg-name">Nombre completo</label>
         <div class="input-wrap">
@@ -741,7 +719,6 @@
         </span>
       </div>
 
-      <!-- Campo: Correo electrónico -->
       <div class="field" id="field-reg-email">
         <label for="reg-email">Correo electrónico</label>
         <div class="input-wrap">
@@ -758,7 +735,6 @@
         </span>
       </div>
 
-      <!-- Campo: Contraseña nueva -->
       <div class="field" id="field-reg-pass">
         <label for="reg-pass">Contraseña</label>
         <div class="input-wrap">
@@ -774,7 +750,6 @@
             </svg>
           </button>
         </div>
-        <!-- Barra de fortaleza de contraseña -->
         <div class="strength-bar" id="strength-bar">
           <span id="s1"></span><span id="s2"></span><span id="s3"></span><span id="s4"></span>
         </div>
@@ -785,7 +760,6 @@
         </span>
       </div>
 
-      <!-- Campo: Confirmar contraseña -->
       <div class="field" id="field-reg-pass2">
         <label for="reg-pass2">Confirmar contraseña</label>
         <div class="input-wrap">
@@ -807,11 +781,9 @@
         </span>
       </div>
 
-      <!-- Selector de Perfil de Inversor -->
       <div class="field">
         <span class="investor-label">Perfil de Inversor</span>
         <div class="investor-options">
-          <!-- Opción: Conservador -->
           <div class="investor-option conservador">
             <input type="radio" name="perfil" id="p-conservador" value="conservador" onchange="updateProfile(this.value)" />
             <label for="p-conservador">
@@ -819,7 +791,6 @@
               Conservador
             </label>
           </div>
-          <!-- Opción: Moderado -->
           <div class="investor-option moderado">
             <input type="radio" name="perfil" id="p-moderado" value="moderado" onchange="updateProfile(this.value)" />
             <label for="p-moderado">
@@ -827,7 +798,6 @@
               Moderado
             </label>
           </div>
-          <!-- Opción: Agresivo -->
           <div class="investor-option agresivo">
             <input type="radio" name="perfil" id="p-agresivo" value="agresivo" onchange="updateProfile(this.value)" />
             <label for="p-agresivo">
@@ -837,7 +807,6 @@
           </div>
         </div>
 
-        <!-- Descripción dinámica del perfil seleccionado -->
         <div class="profile-desc" id="profile-desc"></div>
 
         <span class="field-error" id="err-perfil">
@@ -846,7 +815,6 @@
         </span>
       </div>
 
-      <!-- Checkbox: Aceptación de términos -->
       <div class="checkbox-field">
         <input type="checkbox" id="reg-terms" />
         <label for="reg-terms">
@@ -859,7 +827,6 @@
         Debes aceptar los términos para continuar.
       </span>
 
-      <!-- Botón de registro -->
       <button class="btn-primary" onclick="validateRegister()">Crear mi cuenta</button>
 
       <p class="footer-text">
@@ -868,13 +835,7 @@
       </p>
 
     </div>
-  </div><!-- /screen-register -->
-
-
-  <!-- ============================================================
-       PANTALLA 3: RECUPERACIÓN DE CONTRASEÑA
-       ============================================================ -->
-  <div class="screen" id="screen-recovery">
+  </div><div class="screen" id="screen-recovery">
     <div class="card">
 
       <div class="brand">
@@ -898,13 +859,12 @@
       </div>
       <div class="brand-divider"></div>
 
-      <!-- Formulario de recuperación (se oculta al enviar) -->
-      <div id="recovery-form">
+      <div id="recovery-form-body">
         <h2 class="section-title">Recuperar contraseña</h2>
-        <p class="section-subtitle">Ingresa tu correo y te enviaremos un enlace para restablecer tu acceso.</p>
+        <p class="section-subtitle">Introduce tu correo electrónico para recibir un enlace de restablecimiento.</p>
 
         <div class="field" id="field-rec-email">
-          <label for="rec-email">Correo electrónico registrado</label>
+          <label for="rec-email">Correo electrónico</label>
           <div class="input-wrap">
             <span class="field-icon">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -919,362 +879,236 @@
           </span>
         </div>
 
-        <button class="btn-primary" onclick="validateRecovery()">Enviar enlace de recuperación</button>
+        <button class="btn-primary" onclick="validateRecovery()">Enviar instrucciones</button>
+      </div>
 
-        <p class="footer-text">
-          <button class="link" onclick="showScreen('screen-login')">
-            ← Volver al inicio de sesión
-          </button>
-        </p>
-      </div><!-- /recovery-form -->
-
-      <!-- Mensaje de confirmación animado (oculto inicialmente) -->
       <div class="confirm-box" id="recovery-confirm">
         <div class="confirm-icon">
-          <!-- Icono de check -->
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1a7a4a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1a7a4a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </div>
-        <p class="confirm-title">¡Correo enviado!</p>
-        <p class="confirm-text">
-          Revisa tu bandeja de entrada. Si el correo está registrado en InvestAI, recibirás un enlace para restablecer tu contraseña en los próximos minutos.
-        </p>
-        <p style="font-size:12px; color:#aaa; margin-top:14px;">Revisa también tu carpeta de spam.</p>
-        <button class="link" style="margin-top:20px; font-size:13px;" onclick="resetRecovery(); showScreen('screen-login')">
-          ← Volver al inicio de sesión
-        </button>
-      </div><!-- /recovery-confirm -->
+        <h3 class="confirm-title">Correo enviado</h3>
+        <p class="confirm-text">Hemos enviado un enlace de recuperación a tu bandeja de entrada. Revisa tu carpeta de spam si no lo recibes en unos minutos.</p>
+      </div>
+
+      <p class="footer-text" style="margin-top: 26px;">
+        <button class="link" onclick="backFromRecovery()">Volver al inicio de sesión</button>
+      </p>
 
     </div>
-  </div><!-- /screen-recovery -->
-
-
-  <!-- ============================================================
-       JAVASCRIPT — NAVEGACIÓN, VALIDACIÓN Y LÓGICA
-       ============================================================ -->
-  <script>
-    /* -------------------------------------------------------
-       NAVEGACIÓN ENTRE PANTALLAS CON FADE-IN
-       ------------------------------------------------------- */
-    function showScreen(id) {
-      // Ocultar todas las pantallas
+  </div><script>
+    /* --- Cambiar entre pantallas --- */
+    function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => {
         s.classList.remove('active');
-        s.style.opacity = 0;
       });
-
-      // Mostrar la pantalla destino con animación
-      const target = document.getElementById(id);
-      if (!target) return;
-
-      target.classList.add('active');
-
-      // Forzar reflow para reiniciar la animación CSS
-      void target.offsetWidth;
-
-      // Iniciar opacidad (la animación keyframe se encarga del fade)
-      target.style.opacity = 1;
-
-      // Scroll al tope al cambiar de pantalla
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const target = document.getElementById(screenId);
+      if(target) target.classList.add('active');
     }
 
-    /* -------------------------------------------------------
-       UTILIDAD: MOSTRAR / OCULTAR ERROR DE CAMPO
-       ------------------------------------------------------- */
-    function setError(fieldId, errId, show, inputEl) {
-      const errEl = document.getElementById(errId);
-      const inpEl = inputEl || document.querySelector('#' + fieldId + ' input');
-
-      if (show) {
-        errEl && errEl.classList.add('visible');
-        inpEl && inpEl.classList.add('is-error');
-        inpEl && inpEl.classList.remove('is-valid');
-      } else {
-        errEl && errEl.classList.remove('visible');
-        inpEl && inpEl.classList.remove('is-error');
-        inpEl && inpEl.classList.add('is-valid');
-      }
+    /* --- Volver de recuperación limpiando estados --- */
+    function backFromRecovery() {
+      document.getElementById('recovery-form-body').style.display = 'block';
+      document.getElementById('recovery-confirm').classList.remove('visible');
+      document.getElementById('rec-email').value = '';
+      clearErrors(['rec-email']);
+      showScreen('screen-login');
     }
 
-    /* -------------------------------------------------------
-       UTILIDAD: VALIDAR FORMATO DE EMAIL
-       ------------------------------------------------------- */
-    function isValidEmail(email) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-    }
-
-    /* -------------------------------------------------------
-       TOGGLE: MOSTRAR / OCULTAR CONTRASEÑA
-       ------------------------------------------------------- */
+    /* --- Mostrar/Ocultar Contraseñas --- */
     function togglePass(inputId, btn) {
-      const inp = document.getElementById(inputId);
-      if (!inp) return;
-
-      if (inp.type === 'password') {
-        inp.type = 'text';
-        btn.setAttribute('aria-label', 'Ocultar contraseña');
-        // Icono ojo tachado
+      const input = document.getElementById(inputId);
+      if(!input) return;
+      
+      if (input.type === 'password') {
+        input.type = 'text';
         btn.innerHTML = `
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-            <line x1="1" y1="1" x2="23" y2="23"/>
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-10-7-10-7a19.08 19.08 0 0 1 4.39-4.39M1 1l22 22M9 9a3 3 0 1 0 4.24 4.24M12 9a2.9 2.9 0 0 0-1 .18m2.26 6.55A9 9 0 0 0 22 13s-3-7-10-7a9.45 9.45 0 0 0-4.17 1"/>
           </svg>`;
+        btn.setAttribute('aria-label', 'Ocultar contraseña');
       } else {
-        inp.type = 'password';
-        btn.setAttribute('aria-label', 'Mostrar contraseña');
+        input.type = 'password';
         btn.innerHTML = `
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
           </svg>`;
+        btn.setAttribute('aria-label', 'Mostrar contraseña');
       }
     }
 
-    /* -------------------------------------------------------
-       VALIDACIÓN: PANTALLA DE LOGIN
-       ------------------------------------------------------- */
-    function validateLogin() {
-      const email = document.getElementById('login-email').value;
-      const pass  = document.getElementById('login-pass').value;
-      let valid = true;
-
-      // Validar email
-      if (!isValidEmail(email)) {
-        setError('field-login-email', 'err-login-email', true,
-          document.getElementById('login-email'));
-        valid = false;
-      } else {
-        setError('field-login-email', 'err-login-email', false,
-          document.getElementById('login-email'));
-      }
-
-      // Validar contraseña no vacía
-      if (pass.trim() === '') {
-        setError('field-login-pass', 'err-login-pass', true,
-          document.getElementById('login-pass'));
-        valid = false;
-      } else {
-        setError('field-login-pass', 'err-login-pass', false,
-          document.getElementById('login-pass'));
-      }
-
-      if (valid) {
-        // Simulación de acceso exitoso (en producción se llamaría al backend)
-        alert('✅ Acceso autorizado. Redirigiendo al dashboard de InvestAI...');
-      }
-    }
-
-    /* -------------------------------------------------------
-       INDICADOR DE FORTALEZA DE CONTRASEÑA
-       ------------------------------------------------------- */
-    function evalStrength(pass) {
-      const bars  = ['s1','s2','s3','s4'].map(id => document.getElementById(id));
-      const label = document.getElementById('strength-label');
-
-      // Criterios de fortaleza
-      const hasLen    = pass.length >= 8;
-      const hasUpper  = /[A-Z]/.test(pass);
-      const hasNum    = /[0-9]/.test(pass);
-      const hasSpec   = /[^A-Za-z0-9]/.test(pass);
-
-      const score = [hasLen, hasUpper, hasNum, hasSpec].filter(Boolean).length;
-
-      const colors = ['#DC3545', '#e0832a', '#e6c117', '#1a7a4a'];
-      const labels = ['Muy débil', 'Débil', 'Aceptable', 'Segura'];
-
-      bars.forEach((b, i) => {
-        b.style.background = i < score ? colors[score - 1] : 'var(--border)';
-      });
-
-      if (pass.length === 0) {
-        label.textContent = '';
-        bars.forEach(b => b.style.background = 'var(--border)');
-      } else {
-        label.textContent = labels[score - 1] || 'Muy débil';
-        label.style.color = colors[score - 1] || colors[0];
-      }
-    }
-
-    /* -------------------------------------------------------
-       PERFIL DE INVERSOR: ACTUALIZAR DESCRIPCIÓN DINÁMICA
-       ------------------------------------------------------- */
-    const perfilDesc = {
-      conservador: '🛡️ <strong>Perfil Conservador:</strong> Prioriza la preservación del capital con baja exposición al riesgo. Orientado a instrumentos de renta fija, bonos soberanos y fondos de mercado monetario. Volatilidad máxima admitida: <strong>±5%</strong>.',
-      moderado:    '⚖️ <strong>Perfil Moderado:</strong> Equilibrio entre crecimiento y seguridad. Combina renta fija (60%) con renta variable diversificada (40%). Acepta fluctuaciones moderadas en busca de rendimientos sostenidos. Volatilidad máxima admitida: <strong>±15%</strong>.',
-      agresivo:    '🚀 <strong>Perfil Agresivo:</strong> Alta tolerancia al riesgo con foco en maximizar el retorno a largo plazo. Exposición predominante a renta variable, activos alternativos y mercados emergentes. Volatilidad máxima admitida: <strong>±35%</strong>.',
+    /* --- Descripciones dinámicas del perfil --- */
+    const profileTexts = {
+      conservador: "🛡️ Perfil Conservador: Prioriza la protección del capital y la mínima volatilidad. Ideal para fondos de emergencia o plazos cortos.",
+      moderado: "⚖️ Perfil Moderado: Busca un equilibrio óptimo entre crecimiento y estabilidad, aceptando fluctuaciones moderadas en el mercado.",
+      agresivo: "🚀 Perfil Agresivo: Maximiza el rendimiento a largo plazo exponiéndose a alta volatilidad y activos de renta variable avanzada."
     };
 
-    function updateProfile(val) {
-      const desc = document.getElementById('profile-desc');
-      if (perfilDesc[val]) {
-        desc.innerHTML = perfilDesc[val];
-        desc.classList.add('visible');
-        // Limpiar el error de perfil si estaba visible
-        setError(null, 'err-perfil', false, null);
-        document.getElementById('err-perfil').classList.remove('visible');
+    function updateProfile(value) {
+      const descBox = document.getElementById('profile-desc');
+      if (profileTexts[value]) {
+        descBox.innerText = profileTexts[value];
+        descBox.classList.add('visible');
+        hideError('perfil');
       }
     }
 
-    /* -------------------------------------------------------
-       VALIDACIÓN: PANTALLA DE REGISTRO
-       ------------------------------------------------------- */
-    function validateRegister() {
-      let valid = true;
-
-      const name   = document.getElementById('reg-name').value;
-      const email  = document.getElementById('reg-email').value;
-      const pass   = document.getElementById('reg-pass').value;
-      const pass2  = document.getElementById('reg-pass2').value;
-      const perfil = document.querySelector('input[name="perfil"]:checked');
-      const terms  = document.getElementById('reg-terms').checked;
-
-      // Nombre
-      if (name.trim().length < 3) {
-        setError('field-reg-name', 'err-reg-name', true, document.getElementById('reg-name'));
-        valid = false;
-      } else {
-        setError('field-reg-name', 'err-reg-name', false, document.getElementById('reg-name'));
-      }
-
-      // Email
-      if (!isValidEmail(email)) {
-        setError('field-reg-email', 'err-reg-email', true, document.getElementById('reg-email'));
-        valid = false;
-      } else {
-        setError('field-reg-email', 'err-reg-email', false, document.getElementById('reg-email'));
-      }
-
-      // Contraseña (mínimo 8 caracteres)
-      if (pass.length < 8) {
-        setError('field-reg-pass', 'err-reg-pass', true, document.getElementById('reg-pass'));
-        valid = false;
-      } else {
-        setError('field-reg-pass', 'err-reg-pass', false, document.getElementById('reg-pass'));
-      }
-
-      // Confirmación de contraseña
-      if (pass !== pass2 || pass2 === '') {
-        setError('field-reg-pass2', 'err-reg-pass2', true, document.getElementById('reg-pass2'));
-        valid = false;
-      } else {
-        setError('field-reg-pass2', 'err-reg-pass2', false, document.getElementById('reg-pass2'));
-      }
-
-      // Perfil de inversor
-      const errPerfil = document.getElementById('err-perfil');
-      if (!perfil) {
-        errPerfil.classList.add('visible');
-        valid = false;
-      } else {
-        errPerfil.classList.remove('visible');
-      }
-
-      // Términos y condiciones
-      const errTerms = document.getElementById('err-terms');
-      if (!terms) {
-        errTerms.classList.add('visible');
-        valid = false;
-      } else {
-        errTerms.classList.remove('visible');
-      }
-
-      if (valid) {
-        alert('✅ Cuenta creada con éxito. Bienvenido a InvestAI, ' + name.split(' ')[0] + '.');
-        showScreen('screen-login');
-      }
-    }
-
-    /* -------------------------------------------------------
-       VALIDACIÓN: PANTALLA DE RECUPERACIÓN DE CONTRASEÑA
-       ------------------------------------------------------- */
-    function validateRecovery() {
-      const email = document.getElementById('rec-email').value;
-
-      if (!isValidEmail(email)) {
-        setError('field-rec-email', 'err-rec-email', true,
-          document.getElementById('rec-email'));
+    /* --- Evaluar Fortaleza de Contraseña --- */
+    function evalStrength(pass) {
+      const s1 = document.getElementById('s1');
+      const s2 = document.getElementById('s2');
+      const s3 = document.getElementById('s3');
+      const s4 = document.getElementById('s4');
+      const label = document.getElementById('strength-label');
+      
+      let score = 0;
+      if (!pass) {
+        [s1,s2,s3,s4].forEach(s => s.style.background = 'var(--border)');
+        label.innerText = '';
         return;
       }
 
-      setError('field-rec-email', 'err-rec-email', false,
-        document.getElementById('rec-email'));
+      if (pass.length >= 6) score++;
+      if (pass.length >= 8) score++;
+      if (/[A-Z]/.test(pass) && /[0-9]/.test(pass)) score++;
+      if (/[^A-Za-z0-9]/.test(pass)) score++;
 
-      // Ocultar formulario y mostrar confirmación animada
-      document.getElementById('recovery-form').style.display    = 'none';
-      document.getElementById('recovery-confirm').classList.add('visible');
+      // Reset
+      [s1,s2,s3,s4].forEach(s => s.style.background = 'var(--border)');
+
+      if (score === 1) {
+        s1.style.background = '#DC3545';
+        label.innerText = 'Fortaleza: Débil';
+        label.style.color = '#DC3545';
+      } else if (score === 2) {
+        s1.style.background = '#FFC107';
+        s2.style.background = '#FFC107';
+        label.innerText = 'Fortaleza: Regular';
+        label.style.color = '#B58900';
+      } else if (score === 3) {
+        s1.style.background = '#28A745';
+        s2.style.background = '#28A745';
+        s3.style.background = '#28A745';
+        label.innerText = 'Fortaleza: Buena';
+        label.style.color = '#28A745';
+      } else if (score >= 4) {
+        s1.style.background = '#1A7A4A';
+        s2.style.background = '#1A7A4A';
+        s3.style.background = '#1A7A4A';
+        s4.style.background = '#1A7A4A';
+        label.innerText = 'Fortaleza: Excelente';
+        label.style.color = '#1A7A4A';
+      }
     }
 
-    /* Resetear pantalla de recuperación al volver */
-    function resetRecovery() {
-      document.getElementById('recovery-form').style.display    = '';
-      document.getElementById('recovery-confirm').classList.remove('visible');
-      document.getElementById('rec-email').value = '';
-      setError('field-rec-email', 'err-rec-email', false,
-        document.getElementById('rec-email'));
+    /* --- Utilidades de validación visual --- */
+    function showError(id, msgTxt) {
+      const input = document.getElementById(id);
+      const errSpan = document.getElementById('err-' + id);
+      if(input) {
+        input.classList.add('is-error');
+        input.classList.remove('is-valid');
+      }
+      if(errSpan) errSpan.classList.add('visible');
+      if(msgTxt) {
+        const txtSpan = document.getElementById('err-' + id + '-txt');
+        if(txtSpan) txtSpan.innerText = msgTxt;
+      }
     }
 
-    /* -------------------------------------------------------
-       VALIDACIÓN EN TIEMPO REAL AL PERDER EL FOCO (BLUR)
-       ------------------------------------------------------- */
-    document.addEventListener('DOMContentLoaded', function () {
+    function hideError(id) {
+      const input = document.getElementById(id);
+      const errSpan = document.getElementById('err-' + id);
+      if(input) {
+        input.classList.remove('is-error');
+        input.classList.add('is-valid');
+      }
+      if(errSpan) errSpan.classList.remove('visible');
+    }
 
-      // Login: email
-      document.getElementById('login-email').addEventListener('blur', function () {
-        if (this.value && !isValidEmail(this.value)) {
-          setError('field-login-email', 'err-login-email', true, this);
-        } else if (this.value) {
-          setError('field-login-email', 'err-login-email', false, this);
-        }
+    function clearErrors(ids) {
+      ids.forEach(id => {
+        const input = document.getElementById(id);
+        const errSpan = document.getElementById('err-' + id);
+        if(input) input.classList.remove('is-error', 'is-valid');
+        if(errSpan) errSpan.classList.remove('visible');
       });
+    }
 
-      // Login: contraseña
-      document.getElementById('login-pass').addEventListener('input', function () {
-        if (this.value.trim() !== '') {
-          setError('field-login-pass', 'err-login-pass', false, this);
-        }
-      });
+    function validateEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
 
-      // Registro: email
-      document.getElementById('reg-email').addEventListener('blur', function () {
-        if (this.value && !isValidEmail(this.value)) {
-          setError('field-reg-email', 'err-reg-email', true, this);
-        } else if (this.value) {
-          setError('field-reg-email', 'err-reg-email', false, this);
-        }
-      });
+    /* --- VALIDACIÓN: INICIO DE SESIÓN --- */
+    function validateLogin() {
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-pass').value;
+      let valid = true;
 
-      // Registro: confirmación de contraseña en tiempo real
-      document.getElementById('reg-pass2').addEventListener('input', function () {
-        const pass = document.getElementById('reg-pass').value;
-        if (this.value && this.value !== pass) {
-          setError('field-reg-pass2', 'err-reg-pass2', true, this);
-        } else if (this.value === pass) {
-          setError('field-reg-pass2', 'err-reg-pass2', false, this);
-        }
-      });
+      if (!email) {
+        showError('login-email', 'El correo no puede estar vacío.');
+        valid = false;
+      } else if (!validateEmail(email)) {
+        showError('login-email', 'Ingresa un correo electrónico válido.');
+        valid = false;
+      } else {
+        hideError('login-email');
+      }
 
-      // Recuperación: email
-      document.getElementById('rec-email').addEventListener('blur', function () {
-        if (this.value && !isValidEmail(this.value)) {
-          setError('field-rec-email', 'err-rec-email', true, this);
-        } else if (this.value) {
-          setError('field-rec-email', 'err-rec-email', false, this);
-        }
-      });
+      if (!pass) {
+        showError('login-pass');
+        valid = false;
+      } else {
+        hideError('login-pass');
+      }
 
-      // Permitir envío con tecla Enter en todos los formularios
-      document.getElementById('login-pass').addEventListener('keydown', e => {
-        if (e.key === 'Enter') validateLogin();
-      });
-      document.getElementById('reg-pass2').addEventListener('keydown', e => {
-        if (e.key === 'Enter') validateRegister();
-      });
-      document.getElementById('rec-email').addEventListener('keydown', e => {
-        if (e.key === 'Enter') validateRecovery();
-      });
-    });
+      if (valid) {
+        // Redirección automática requerida al módulo 6.2-mercado
+        window.location.href = 'modulo6.2-mercado';
+      }
+    }
+
+    /* --- VALIDACIÓN: REGISTRO --- */
+    function validateRegister() {
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const pass = document.getElementById('reg-pass').value;
+      const pass2 = document.getElementById('reg-pass2').value;
+      const perfil = document.querySelector('input[name="perfil"]:checked');
+      const terms = document.getElementById('reg-terms').checked;
+      
+      let valid = true;
+
+      if (!name) { showError('reg-name'); valid = false; } else { hideError('reg-name'); }
+      
+      if (!email || !validateEmail(email)) { showError('reg-email'); valid = false; } else { hideError('reg-email'); }
+      
+      if (!pass || pass.length < 8) { showError('reg-pass'); valid = false; } else { hideError('reg-pass'); }
+      
+      if (!pass2 || pass !== pass2) { showError('reg-pass2'); valid = false; } else { hideError('reg-pass2'); }
+      
+      if (!perfil) { showError('perfil'); valid = false; } else { hideError('perfil'); }
+      
+      if (!terms) { showError('terms'); valid = false; } else { hideError('terms'); }
+
+      if (valid) {
+        // Redirección automática requerida al módulo 6.2-mercado
+        window.location.href = 'modulo6.2-mercado';
+      }
+    }
+
+    /* --- VALIDACIÓN: RECUPERACIÓN --- */
+    function validateRecovery() {
+      const email = document.getElementById('rec-email').value.trim();
+      if (!email || !validateEmail(email)) {
+        showError('rec-email');
+      } else {
+        hideError('rec-email');
+        document.getElementById('recovery-form-body').style.display = 'none';
+        document.getElementById('recovery-confirm').classList.add('visible');
+      }
+    }
   </script>
-
 </body>
 </html>
