@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>InvestAI — Módulo 6: Core Predictivo Central</title>
+  <title>InvestAI — Módulos del Sistema</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
@@ -112,6 +112,7 @@
       text-decoration: none;
       white-space: nowrap;
       transition: background var(--ease), color var(--ease);
+      cursor: pointer;
     }
 
     .navbar-nav li a:hover { background: rgba(255,255,255,.10); color: #fff; }
@@ -176,12 +177,20 @@
     }
 
     /* =========================================================
-       LAYOUT PRINCIPAL
+       LAYOUT PRINCIPAL Y MANEJO DE VISTAS
        ========================================================= */
     .page-wrap {
       max-width: 1400px;
       margin: 0 auto;
       padding: 28px 24px 48px;
+    }
+
+    /* Clase utilitaria para ocultar vistas inactivas */
+    .view-section {
+      display: none;
+    }
+    .view-section.active-view {
+      display: block;
     }
 
     .page-header {
@@ -599,6 +608,37 @@
     .status-ok  { background: var(--ok-bg);  color: var(--ok); }
     .status-err { background: var(--err-bg); color: var(--err); }
 
+    /* =========================================================
+       PANEL GENÉRICO / CONTENEDOR PLACEHOLDER
+       ========================================================= */
+    .placeholder-panel {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 48px 24px;
+      text-align: center;
+      border-top: 4px solid var(--accent);
+    }
+
+    .placeholder-icon {
+      font-size: 42px;
+      margin-bottom: 16px;
+    }
+
+    .placeholder-panel h2 {
+      font-size: 20px;
+      color: var(--primary);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .placeholder-panel p {
+      font-size: 14px;
+      color: var(--text-3);
+      max-width: 500px;
+      margin: 0 auto 24px;
+    }
+
     .page-footer {
       margin-top: 36px;
       text-align: center;
@@ -607,14 +647,13 @@
     }
 
     @media (max-width: 1100px) {
-      .kpi-grid     { grid-template-columns: repeat(2, 1fr); }
+      .kpi-grid      { grid-template-columns: repeat(2, 1fr); }
       .section-row  { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 640px) {
       .page-wrap    { padding: 18px 14px 36px; }
-      .kpi-grid     { grid-template-columns: 1fr; gap: 10px; }
-      .navbar-nav   { display: none; }
+      .kpi-grid      { grid-template-columns: 1fr; gap: 10px; }
       .table-toolbar { flex-direction: column; align-items: flex-start; }
     }
   </style>
@@ -622,7 +661,7 @@
 <body>
 
   <nav class="navbar">
-    <a class="navbar-brand" href="#">
+    <a class="navbar-brand" href="#" onclick="switchView('m6', this)">
       <div class="logo-box">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="3"  y="9"  width="3" height="7" rx=".5" fill="#fff"/>
@@ -640,17 +679,17 @@
     </a>
 
     <ul class="navbar-nav">
-      <li><a href="#">Autenticación (M1)</a></li>
-      <li><a href="#">Ingesta de Datos (M2)</a></li>
-      <li><a href="#">Clasificación (M3)</a></li>
-      <li><a href="#">Regresión (M4)</a></li>
-      <li><a href="#">Análisis NLP (M5)</a></li>
-      <li><a href="#" class="active">Core Predictivo (M6)</a></li>
-      <li><a href="#">Estrategias (M7)</a></li>
-      <li><a href="#">Órdenes (M8)</a></li>
-      <li><a href="#">Portafolios (M9)</a></li>
-      <li><a href="#">Consola (M10)</a></li>
-      <li><a href="#">Backtesting (M11)</a></li>
+      <li><a onclick="switchView('m1', this)">Autenticación (M1)</a></li>
+      <li><a onclick="switchView('m2', this)">Ingesta de Datos (M2)</a></li>
+      <li><a onclick="switchView('m3', this)">Clasificación (M3)</a></li>
+      <li><a onclick="switchView('m4', this)">Regresión (M4)</a></li>
+      <li><a onclick="switchView('m5', this)">Análisis NLP (M5)</a></li>
+      <li><a onclick="switchView('m6', this)" class="active">Core Predictivo (M6)</a></li>
+      <li><a onclick="switchView('m7', this)">Estrategias (M7)</a></li>
+      <li><a onclick="switchView('m8', this)">Órdenes (M8)</a></li>
+      <li><a onclick="switchView('m9', this)">Portafolios (M9)</a></li>
+      <li><a onclick="switchView('m10', this)">Consola (M10)</a></li>
+      <li><a onclick="switchView('m11', this)">Backtesting (M11)</a></li>
     </ul>
 
     <div class="navbar-right">
@@ -664,150 +703,166 @@
 
   <main class="page-wrap">
 
-    <div class="page-header">
-      <div class="page-header-left">
-        <h1>Core Predictivo Central</h1>
-        <p>Módulo 6 · Concentrador de los 16 modelos de IA del sistema InvestAI</p>
+    <section id="view-placeholder" class="view-section">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1 id="placeholder-title">Módulo del Sistema</h1>
+          <p id="placeholder-subtitle-text">Entorno modular integrado de InvestAI</p>
+        </div>
       </div>
-      <div class="last-update">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-        </svg>
-        Última actualización: <strong id="last-update-time">Hace unos instantes</strong>
+      <div class="placeholder-panel">
+        <div class="placeholder-icon" id="placeholder-icon">🗂️</div>
+        <h2 id="placeholder-panel-title">Módulo en Desarrollo</h2>
+        <p id="placeholder-desc">La vista y operaciones de este módulo están siendo vinculadas al núcleo del sistema predictivo central.</p>
+        <button class="filter-btn active-all" onclick="resetToCore()">Volver al Core Predictivo</button>
       </div>
-    </div>
+    </section>
 
-    <div class="kpi-grid">
-      <div class="kpi-card kpi-blue">
-        <div class="kpi-icon">⚙️</div>
-        <div class="kpi-eyebrow">Modelos Activos</div>
-        <div class="kpi-value">16<span class="kpi-unit"> modelos</span></div>
-        <div class="kpi-sub">4 arquitecturas · 100% operativos</div>
-      </div>
-
-      <div class="kpi-card kpi-gold">
-        <div class="kpi-icon">🎯</div>
-        <div class="kpi-eyebrow">Accuracy Promedio</div>
-        <div class="kpi-value" id="kpi-acc">84.2<span class="kpi-unit">%</span></div>
-        <div class="kpi-sub">Calculado en ventana histórica</div>
-      </div>
-
-      <div class="kpi-card kpi-green">
-        <div class="kpi-icon">📈</div>
-        <div class="kpi-eyebrow">Inferencias Totales</div>
-        <div class="kpi-value" id="kpi-total">1,240</div>
-        <div class="kpi-sub" id="kpi-ok-count">994 exitosas</div>
+    <section id="view-m6" class="view-section active-view">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>Core Predictivo Central</h1>
+          <p>Módulo 6 · Concentrador de los 16 modelos de IA del sistema InvestAI</p>
+        </div>
+        <div class="last-update">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Última actualización: <strong id="last-update-time">Hace unos instantes</strong>
+        </div>
       </div>
 
-      <div class="kpi-card kpi-warn">
-        <div class="kpi-icon">⚡</div>
-        <div class="kpi-eyebrow">Latencia Core</div>
-        <div class="kpi-value">38<span class="kpi-unit"> ms</span></div>
-        <div class="kpi-sub">P99: 142 ms · Multi-hilo</div>
-      </div>
-    </div>
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-blue">
+          <div class="kpi-icon">⚙️</div>
+          <div class="kpi-eyebrow">Modelos Activos</div>
+          <div class="kpi-value">16<span class="kpi-unit"> modelos</span></div>
+          <div class="kpi-sub">4 arquitecturas · 100% operativos</div>
+        </div>
 
-    <div class="section-row">
-      <div class="panel">
-        <div class="panel-title">Distribución por Arquitectura</div>
-        <div class="arch-list">
-          <div class="arch-item">
-            <div class="arch-header">
-              <span class="arch-name">Clasificación <span class="arch-badge">Supervisado</span></span>
-              <span class="arch-count">6 / 16</span>
+        <div class="kpi-card kpi-gold">
+          <div class="kpi-icon">🎯</div>
+          <div class="kpi-eyebrow">Accuracy Promedio</div>
+          <div class="kpi-value" id="kpi-acc">84.2<span class="kpi-unit">%</span></div>
+          <div class="kpi-sub">Calculado en ventana histórica</div>
+        </div>
+
+        <div class="kpi-card kpi-green">
+          <div class="kpi-icon">📈</div>
+          <div class="kpi-eyebrow">Inferencias Totales</div>
+          <div class="kpi-value" id="kpi-total">1,240</div>
+          <div class="kpi-sub" id="kpi-ok-count">994 exitosas</div>
+        </div>
+
+        <div class="kpi-card kpi-warn">
+          <div class="kpi-icon">⚡</div>
+          <div class="kpi-eyebrow">Latencia Core</div>
+          <div class="kpi-value">38<span class="kpi-unit"> ms</span></div>
+          <div class="kpi-sub">P99: 142 ms · Multi-hilo</div>
+        </div>
+      </div>
+
+      <div class="section-row">
+        <div class="panel">
+          <div class="panel-title">Distribución por Arquitectura</div>
+          <div class="arch-list">
+            <div class="arch-item">
+              <div class="arch-header">
+                <span class="arch-name">Clasificación <span class="arch-badge">Supervisado</span></span>
+                <span class="arch-count">6 / 16</span>
+              </div>
+              <div class="arch-track"><div class="arch-fill fill-clasif" style="width:37.5%"></div></div>
+              <div class="model-chips">
+                <span class="model-chip chip-clasif">SVC</span>
+                <span class="model-chip chip-clasif">XGBoost</span>
+                <span class="model-chip chip-clasif">Random Forest</span>
+              </div>
             </div>
-            <div class="arch-track"><div class="arch-fill fill-clasif" style="width:37.5%"></div></div>
-            <div class="model-chips">
-              <span class="model-chip chip-clasif">SVC</span>
-              <span class="model-chip chip-clasif">XGBoost</span>
-              <span class="model-chip chip-clasif">Random Forest</span>
+
+            <div class="arch-item">
+              <div class="arch-header">
+                <span class="arch-name">Regresión Temporal <span class="arch-badge">Deep Learning</span></span>
+                <span class="arch-count">6 / 16</span>
+              </div>
+              <div class="arch-track"><div class="arch-fill fill-regres" style="width:37.5%"></div></div>
+              <div class="model-chips">
+                <span class="model-chip chip-regres">LSTM Regressor</span>
+                <span class="model-chip chip-regres">BiLSTM</span>
+                <span class="model-chip chip-regres">SimpleRNN</span>
+              </div>
+            </div>
+
+            <div class="arch-item">
+              <div class="arch-header">
+                <span class="arch-name">Procesamiento de Texto <span class="arch-badge">NLP</span></span>
+                <span class="arch-count">2 / 16</span>
+              </div>
+              <div class="arch-track"><div class="arch-fill fill-texto" style="width:12.5%"></div></div>
+              <div class="model-chips">
+                <span class="model-chip chip-texto">NLP VADER</span>
+                <span class="model-chip chip-texto">OpenAI API</span>
+              </div>
+            </div>
+
+            <div class="arch-item">
+              <div class="arch-header">
+                <span class="arch-name">Híbridos Ensemble <span class="arch-badge">Meta-modelo</span></span>
+                <span class="arch-count">2 / 16</span>
+              </div>
+              <div class="arch-track"><div class="arch-fill fill-hybrid" style="width:12.5%"></div></div>
+              <div class="model-chips">
+                <span class="model-chip chip-hybrid">ARIMA-LSTM</span>
+                <span class="model-chip chip-hybrid">Votación Ensamblado</span>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div class="arch-item">
-            <div class="arch-header">
-              <span class="arch-name">Regresión Temporal <span class="arch-badge">Deep Learning</span></span>
-              <span class="arch-count">6 / 16</span>
-            </div>
-            <div class="arch-track"><div class="arch-fill fill-regres" style="width:37.5%"></div></div>
-            <div class="model-chips">
-              <span class="model-chip chip-regres">LSTM Regressor</span>
-              <span class="model-chip chip-regres">BiLSTM</span>
-              <span class="model-chip chip-regres">SimpleRNN</span>
-            </div>
-          </div>
-
-          <div class="arch-item">
-            <div class="arch-header">
-              <span class="arch-name">Procesamiento de Texto <span class="arch-badge">NLP</span></span>
-              <span class="arch-count">2 / 16</span>
-            </div>
-            <div class="arch-track"><div class="arch-fill fill-texto" style="width:12.5%"></div></div>
-            <div class="model-chips">
-              <span class="model-chip chip-texto">NLP VADER</span>
-              <span class="model-chip chip-texto">OpenAI API</span>
-            </div>
-          </div>
-
-          <div class="arch-item">
-            <div class="arch-header">
-              <span class="arch-name">Híbridos Ensemble <span class="arch-badge">Meta-modelo</span></span>
-              <span class="arch-count">2 / 16</span>
-            </div>
-            <div class="arch-track"><div class="arch-fill fill-hybrid" style="width:12.5%"></div></div>
-            <div class="model-chips">
-              <span class="model-chip chip-hybrid">ARIMA-LSTM</span>
-              <span class="model-chip chip-hybrid">Votación Ensamblado</span>
+        <div class="panel">
+          <div class="panel-title">Métricas de Rendimiento (Accuracy)</div>
+          <div class="canvas-wrap">
+            <canvas id="radarChart"></canvas>
+            <div class="radar-legend">
+              <div class="radar-legend-item"><div class="radar-legend-dot" style="background:#1F3864"></div><span>Clasificación</span></div>
+              <div class="radar-legend-item"><div class="radar-legend-dot" style="background:#C5961A"></div><span>Regresión</span></div>
+              <div class="radar-legend-item"><div class="radar-legend-dot" style="background:#7c3aed"></div><span>NLP</span></div>
+              <div class="radar-legend-item"><div class="radar-legend-dot" style="background:#0e7490"></div><span>Híbridos</span></div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="panel">
-        <div class="panel-title">Métricas de Rendimiento (Accuracy)</div>
-        <div class="canvas-wrap">
-          <canvas id="radarChart"></canvas>
-          <div class="radar-legend">
-            <div class="radar-legend-item"><div class="radar-legend-dot" style="background:#1F3864"></div><span>Clasificación</span></div>
-            <div class="radar-legend-item"><div class="radar-legend-dot" style="background:#C5961A"></div><span>Regresión</span></div>
-            <div class="radar-legend-item"><div class="radar-legend-dot" style="background:#7c3aed"></div><span>NLP</span></div>
-            <div class="radar-legend-item"><div class="radar-legend-dot" style="background:#0e7490"></div><span>Híbridos</span></div>
+      <div class="table-panel">
+        <div class="table-toolbar">
+          <div class="table-toolbar-left">
+            <h2>Historial de Inferencias Recientes</h2>
+            <span id="table-subtitle">Monitoreo en tiempo real del motor predictivo</span>
+          </div>
+          <div class="table-controls">
+            <div class="search-wrap">
+              <input type="text" id="search-input" placeholder="Buscar por Ticker o Modelo..." onkeyup="filterTable()" />
+            </div>
+            <button class="filter-btn active-all" id="btn-all">Logs Consolidados</button>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="table-panel">
-      <div class="table-toolbar">
-        <div class="table-toolbar-left">
-          <h2>Historial de Inferencias Recientes</h2>
-          <span id="table-subtitle">Monitoreo en tiempo real del motor predictivo</span>
-        </div>
-        <div class="table-controls">
-          <div class="search-wrap">
-            <input type="text" id="search-input" placeholder="Buscar por Ticker o Modelo..." onkeyup="filterTable()" />
-          </div>
-          <button class="filter-btn active-all" id="btn-all">Logs Consolidados</button>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Activo</th>
+                <th>Modelo Utilizado</th>
+                <th>Tipo de Inferencia</th>
+                <th>Predicción Generada</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
         </div>
       </div>
-
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Timestamp</th>
-              <th>Activo</th>
-              <th>Modelo Utilizado</th>
-              <th>Tipo de Inferencia</th>
-              <th>Predicción Generada</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody id="table-body">
-            </tbody>
-        </table>
-      </div>
-    </div>
+    </section>
 
     <footer class="page-footer">
       <p>&copy; 2026 InvestAI Inc. - Facultad de Ingeniería de Sistemas e Informática (UNMSM). Todos los derechos reservados.</p>
@@ -815,6 +870,20 @@
   </main>
 
   <script>
+    // Datos de los módulos para hacer dinámica la vista genérica
+    const modulosConfig = {
+      m1: { title: "Autenticación (M1)", desc: "Gestión de seguridad, tokens cifrados JWT y control de acceso de usuarios mediante MFA.", icon: "🔐" },
+      m2: { title: "Ingesta de Datos (M2)", desc: "Pipelines automatizados de captura y streaming en tiempo real desde APIs financieras globales.", icon: "📥" },
+      m3: { title: "Clasificación (M3)", desc: "Mapeo de activos y etiquetado de patrones de mercado mediante algoritmos supervisados primarios.", icon: "🏷️" },
+      m4: { title: "Regresión (M4)", desc: "Modelos cuantitativos continuos orientados a la estimación de precios objetivos y targets numéricos.", icon: "📊" },
+      m5: { title: "Análisis NLP (M5)", desc: "Procesamiento de Lenguaje Natural sobre noticias financieras globales, redes y reportes macroeconómicos.", icon: "💬" },
+      m7: { title: "Estrategias (M7)", desc: "Generación algorítmica de reglas operativas basadas en las señales procesadas por el predictivo.", icon: "💡" },
+      m8: { title: "Órdenes (M8)", desc: "Enrutador inteligente hacia brókers y ejecución de órdenes con control estricto de Slippage.", icon: "⚡" },
+      m9: { title: "Portafolios (M9)", desc: "Rebalanceo automático de activos mediante optimización de varianza media y riesgo controlado.", icon: "💼" },
+      m10: { title: "Consola (M10)", desc: "Panel general de administración del sistema para el control manual de umbrales operativos.", icon: "🖥️" },
+      m11: { title: "Backtesting (M11)", desc: "Simulador de alto rendimiento sobre series de tiempo históricas con métricas de Sharpe y Sortino.", icon: "⏳" }
+    };
+
     // Generación dinámica de datos realistas directo de tu ERS
     const inferenciasData = [
       { ts: "2026-06-25 17:20:11", ticker: "AAPL", model: "XGBoost Classifier", type: "Direccional (Subida)", pred: "🟢 ALTA", status: "Acertada" },
@@ -824,6 +893,45 @@
       { ts: "2026-06-25 17:09:55", ticker: "SOL", model: "NLP VADER", type: "Sentimiento Noticias", pred: "Positivo (0.78)", status: "Acertada" },
       { ts: "2026-06-25 17:05:14", ticker: "AMZN", model: "ARIMA-LSTM", type: "Híbrido Continuo", pred: "$182.10", status: "Acertada" }
     ];
+
+    // LÓGICA DE NAVEGACIÓN ENTRE VISTAS
+    function switchView(moduleId, element) {
+      // 1. Quitar clase 'active' de todos los enlaces del nav
+      document.querySelectorAll('.navbar-nav li a').forEach(link => link.classList.remove('active'));
+      
+      // Si se hizo click en un enlace del menú, asignarle la clase 'active'
+      if(element && element.tagName === 'A') {
+        element.classList.add('active');
+      } else {
+        // Si se hizo click en el logo, activar M6 por defecto en el menú
+        const navLinks = document.querySelectorAll('.navbar-nav li a');
+        if(navLinks[5]) navLinks[5].classList.add('active');
+      }
+
+      // 2. Ocultar todas las secciones
+      document.getElementById('view-m6').classList.remove('active-view');
+      document.getElementById('view-placeholder').classList.remove('active-view');
+
+      // 3. Mostrar la sección correspondiente
+      if (moduleId === 'm6') {
+        document.getElementById('view-m6').classList.add('active-view');
+        // Redibujar el canvas de radar ya que vuelve a estar visible
+        drawRadar();
+      } else {
+        const config = modulosConfig[moduleId];
+        if (config) {
+          document.getElementById('placeholder-title').innerText = config.title;
+          document.getElementById('placeholder-panel-title').innerText = config.title;
+          document.getElementById('placeholder-desc').innerText = config.desc;
+          document.getElementById('placeholder-icon').innerText = config.icon;
+        }
+        document.getElementById('view-placeholder').classList.add('active-view');
+      }
+    }
+
+    function resetToCore() {
+      switchView('m6', null);
+    }
 
     function renderTable(data) {
       const tbody = document.getElementById("table-body");
@@ -853,12 +961,12 @@
       renderTable(filtered);
     }
 
-    // Dibujo nativo del gráfico analítico en Canvas sin librerías externas pesadas
     function drawRadar() {
-      const ctx = document.getElementById("radarChart").getContext("2d");
+      const canvas = document.getElementById("radarChart");
+      if(!canvas) return;
+      const ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, 240, 240);
       
-      // Dibujar polígono base de red de fondo
       ctx.strokeStyle = "#e5e9f0";
       ctx.lineWidth = 1;
       for (let r = 30; r <= 90; r += 30) {
@@ -873,7 +981,6 @@
         ctx.stroke();
       }
 
-      // Rellenar área del performance de la IA
       ctx.fillStyle = "rgba(31, 56, 100, 0.4)";
       ctx.strokeStyle = "#1F3864";
       ctx.lineWidth = 2;
